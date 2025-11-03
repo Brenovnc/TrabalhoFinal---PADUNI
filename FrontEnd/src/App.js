@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
 import Home from './components/Home';
+import ProfileView from './components/ProfileView';
 import { isAuthenticated } from './utils/auth';
 import './App.css';
 
@@ -16,6 +17,12 @@ function App() {
       // If user is authenticated and on home, show home
       if (isAuthenticated() && (path === '/' || path === '/home')) {
         setCurrentView('home');
+        return;
+      }
+
+      // Check if user wants to view profile
+      if (isAuthenticated() && (path === '/profile' || path === '/perfil')) {
+        setCurrentView('profile');
         return;
       }
 
@@ -52,6 +59,9 @@ function App() {
     } else if (view === 'home') {
       window.history.pushState({}, '', '/');
       setCurrentView('home');
+    } else if (view === 'profile') {
+      window.history.pushState({}, '', '/profile');
+      setCurrentView('profile');
     } else {
       window.history.pushState({}, '', '/login');
       setCurrentView('login');
@@ -59,6 +69,14 @@ function App() {
   };
 
   // Render appropriate component based on current view
+  if (currentView === 'profile') {
+    return (
+      <div className="App">
+        <ProfileView />
+      </div>
+    );
+  }
+
   if (currentView === 'home') {
     return (
       <div className="App">

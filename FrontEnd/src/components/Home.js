@@ -15,6 +15,10 @@ const Home = () => {
     }
   }, []);
 
+  const navigateToProfile = () => {
+    window.location.href = '/profile';
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -59,9 +63,14 @@ const Home = () => {
           </div>
         </div>
 
-        <button onClick={handleLogout} className="logout-button">
-          Sair
-        </button>
+        <div className="home-actions">
+          <button onClick={navigateToProfile} className="profile-button">
+            Ver Meu Perfil
+          </button>
+          <button onClick={handleLogout} className="logout-button">
+            Sair
+          </button>
+        </div>
       </div>
     </div>
   );

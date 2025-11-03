@@ -1,10 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const { addUser, findUserByEmail } = require('../utils/fileStorage');
+const { addUser, findUserByEmail, findUserById } = require('../utils/fileStorage');
 const { validateUserData } = require('../utils/validators');
 const { generateToken } = require('../utils/jwt');
 const { checkRateLimit, recordFailedAttempt, clearAttempts } = require('../utils/rateLimiter');
+const { authenticateToken } = require('../middleware/auth');
 
 // POST /api/users/register - Cadastrar novo usuário
 router.post('/register', async (req, res) => {
@@ -138,6 +139,38 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Error during login:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor. Tente novamente mais tarde.'
+    });
+  }
+});
+
+// GET /api/users/profile - Visualizar perfil do usuário autenticado
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    // Get user ID from token
+    const userId = req.user.id;
+
+    // Find user in database
+    const user = await findUserById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    // Return user data without password
+    const { password, ...userResponse } = user;
+
+    res.status(200).json({
+      success: true,
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor. Tente novamente mais tarde.'
