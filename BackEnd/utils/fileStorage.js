@@ -54,12 +54,32 @@ async function findUserById(id) {
   return users.find(user => user.id === id);
 }
 
+// Update user by ID
+async function updateUser(userId, updates) {
+  const users = await readUsers();
+  const userIndex = users.findIndex(user => user.id === userId);
+  
+  if (userIndex === -1) {
+    return null;
+  }
+
+  // Merge updates with existing user data
+  users[userIndex] = {
+    ...users[userIndex],
+    ...updates
+  };
+
+  await writeUsers(users);
+  return users[userIndex];
+}
+
 module.exports = {
   readUsers,
   writeUsers,
   addUser,
   findUserByEmail,
-  findUserById
+  findUserById,
+  updateUser
 };
 
 

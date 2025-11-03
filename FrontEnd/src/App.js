@@ -3,6 +3,7 @@ import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
 import Home from './components/Home';
 import ProfileView from './components/ProfileView';
+import ProfileEdit from './components/ProfileEdit';
 import { isAuthenticated } from './utils/auth';
 import './App.css';
 
@@ -23,6 +24,12 @@ function App() {
       // Check if user wants to view profile
       if (isAuthenticated() && (path === '/profile' || path === '/perfil')) {
         setCurrentView('profile');
+        return;
+      }
+
+      // Check if user wants to edit profile
+      if (isAuthenticated() && (path === '/profile/edit' || path === '/perfil/editar')) {
+        setCurrentView('profileEdit');
         return;
       }
 
@@ -62,6 +69,9 @@ function App() {
     } else if (view === 'profile') {
       window.history.pushState({}, '', '/profile');
       setCurrentView('profile');
+    } else if (view === 'profileEdit') {
+      window.history.pushState({}, '', '/profile/edit');
+      setCurrentView('profileEdit');
     } else {
       window.history.pushState({}, '', '/login');
       setCurrentView('login');
@@ -69,6 +79,14 @@ function App() {
   };
 
   // Render appropriate component based on current view
+  if (currentView === 'profileEdit') {
+    return (
+      <div className="App">
+        <ProfileEdit />
+      </div>
+    );
+  }
+
   if (currentView === 'profile') {
     return (
       <div className="App">

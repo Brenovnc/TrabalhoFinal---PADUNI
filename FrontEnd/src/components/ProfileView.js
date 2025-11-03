@@ -192,6 +192,12 @@ const ProfileView = () => {
           >
             Voltar
           </button>
+          <button 
+            onClick={() => window.location.href = '/profile/edit'} 
+            className="edit-button"
+          >
+            Editar Perfil
+          </button>
         </div>
       </div>
     </div>

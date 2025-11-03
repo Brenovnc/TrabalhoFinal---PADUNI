@@ -142,10 +142,34 @@
   padding-top: 24px;
   border-top: 1px solid #e0e0e0;
   display: flex;
+  gap: 16px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .back-button {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.back-button:active {
+  transform: translateY(0);
+}
+
+.edit-button {
   background: linear-gradient(135deg, #19528d 0%, #1a5f9f 100%);
   color: white;
   border: none;
@@ -158,12 +182,12 @@
   box-shadow: 0 4px 15px rgba(25, 82, 141, 0.3);
 }
 
-.back-button:hover {
+.edit-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(25, 82, 141, 0.4);
 }
 
-.back-button:active {
+.edit-button:active {
   transform: translateY(0);
 }
 
