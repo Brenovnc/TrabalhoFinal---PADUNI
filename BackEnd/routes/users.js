@@ -1,15 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const { addUser, findUserByEmail, findUserById, updateUser } = require('../utils/fileStorage');
+const { addUser, findUserByEmail, findUserById, updateUser, deleteUser } = require('../utils/fileStorage');
 const { validateUserData, isValidEmail, isStrongPassword } = require('../utils/validators');
 const { validateEditableProfileData } = require('../utils/profileValidators');
 const { generateToken } = require('../utils/jwt');
 const { checkRateLimit, recordFailedAttempt, clearAttempts } = require('../utils/rateLimiter');
 const { authenticateToken } = require('../middleware/auth');
 const { createMFACode, verifyMFACode, invalidateMFACode } = require('../utils/mfa');
-const { sendMFACode } = require('../utils/emailService');
+const { sendMFACode, sendAccountDeletionCode } = require('../utils/emailService');
 const { blacklistToken } = require('../utils/tokenBlacklist');
+const { addLogEntry } = require('../utils/criticalActionsLog');
 
 // POST /api/users/register - Cadastrar novo usuário
 router.post('/register', async (req, res) => {
@@ -457,6 +458,140 @@ router.put('/change-credentials', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error changing credentials:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor. Tente novamente mais tarde.'
+    });
+  }
+});
+
+// POST /api/users/request-deletion-code - Solicitar código de confirmação para exclusão de conta
+router.post('/request-deletion-code', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Find user
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    // Generate and store MFA code for account deletion
+    const code = createMFACode(userId, user.email);
+
+    // Send deletion confirmation code via email
+    try {
+      await sendAccountDeletionCode(user.email, code);
+      
+      res.status(200).json({
+        success: true,
+        message: 'Código de confirmação enviado para o seu email.'
+      });
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      // In development, we still return success as email is mocked
+      res.status(200).json({
+        success: true,
+        message: 'Código de confirmação gerado. Verifique o console do servidor em desenvolvimento.',
+        debugCode: code // Only in development!
+      });
+    }
+  } catch (error) {
+    console.error('Error requesting deletion code:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao gerar código de confirmação. Tente novamente mais tarde.'
+    });
+  }
+});
+
+// DELETE /api/users/account - Excluir conta do usuário autenticado
+router.delete('/account', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, confirmationCode } = req.body;
+
+    // Validate required fields
+    if (!currentPassword || !confirmationCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Senha atual e código de confirmação são obrigatórios'
+      });
+    }
+
+    // Find user
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    // Validate current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Senha atual inválida'
+      });
+    }
+
+    // Verify confirmation code
+    const codeVerification = verifyMFACode(userId, confirmationCode);
+    if (!codeVerification.valid) {
+      return res.status(401).json({
+        success: false,
+        message: codeVerification.message || 'Código de confirmação incorreto ou expirado'
+      });
+    }
+
+    // Log the critical action before deletion
+    try {
+      await addLogEntry({
+        responsible: user.email, // Email of the user who is deleting their account
+        action: 'USER_DELETION',
+        target: userId,
+        justification: 'Exclusão de conta solicitada pelo próprio usuário',
+        metadata: {
+          userType: user.userType,
+          email: user.email
+        }
+      });
+    } catch (logError) {
+      console.error('Error logging deletion action:', logError);
+      // Continue with deletion even if logging fails
+    }
+
+    // Perform hard delete (LGPD compliant - permanent removal)
+    const deleted = await deleteUser(userId);
+    
+    if (!deleted) {
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao excluir conta'
+      });
+    }
+
+    // Invalidate MFA code
+    invalidateMFACode(userId);
+
+    // Get token from request to blacklist it
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token) {
+      blacklistToken(token);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Conta excluída com sucesso.'
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor. Tente novamente mais tarde.'

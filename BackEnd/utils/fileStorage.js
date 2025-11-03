@@ -73,13 +73,29 @@ async function updateUser(userId, updates) {
   return users[userIndex];
 }
 
+// Delete user by ID (hard delete - LGPD compliant)
+async function deleteUser(userId) {
+  const users = await readUsers();
+  const userIndex = users.findIndex(user => user.id === userId);
+  
+  if (userIndex === -1) {
+    return false;
+  }
+
+  // Remove user from array (hard delete)
+  users.splice(userIndex, 1);
+  await writeUsers(users);
+  return true;
+}
+
 module.exports = {
   readUsers,
   writeUsers,
   addUser,
   findUserByEmail,
   findUserById,
-  updateUser
+  updateUser,
+  deleteUser
 };
 
 

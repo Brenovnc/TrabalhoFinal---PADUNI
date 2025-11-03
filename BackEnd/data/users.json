@@ -34,5 +34,26 @@
     ],
     "userType": "veterano",
     "createdAt": "2025-11-03T03:41:21.156Z"
+  },
+  {
+    "id": "1762144017074",
+    "fullName": "11111111111",
+    "email": "1111111@gmail.com",
+    "password": "$2b$10$NUUtMnlSeJtWLO3uM/aRqeiwQ3o/rnkVe/GUmNALjktWl8yaFVYoS",
+    "yearOfBirth": "1998",
+    "gender": "Masculino",
+    "course": "Engenharia Civil",
+    "yearOfEntry": "2020",
+    "interests": [
+      "Arte",
+      "Jogos",
+      "Academia",
+      "Idiomas",
+      "Viagens",
+      "Dança",
+      "Tecnologia"
+    ],
+    "userType": "veterano",
+    "createdAt": "2025-11-03T04:26:57.074Z"
   }
 ]

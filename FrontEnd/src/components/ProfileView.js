@@ -204,6 +204,12 @@ const ProfileView = () => {
           >
             Alterar Email/Senha
           </button>
+          <button 
+            onClick={() => window.location.href = '/delete-account'} 
+            className="delete-account-button"
+          >
+            Excluir Conta
+          </button>
         </div>
       </div>
     </div>

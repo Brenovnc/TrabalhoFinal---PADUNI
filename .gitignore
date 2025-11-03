@@ -42,6 +42,7 @@ FrontEnd/.pnp.js
 
 # Backend data files (JSON database - contains user data)
 BackEnd/data/users.json
+BackEnd/data/critical_actions_log.json
 *.json.bak
 *.json.tmp
 

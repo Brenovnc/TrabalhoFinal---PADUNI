@@ -213,6 +213,28 @@
   transform: translateY(0);
 }
 
+.delete-account-button {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.delete-account-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.delete-account-button:active {
+  transform: translateY(0);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .profile-card {
