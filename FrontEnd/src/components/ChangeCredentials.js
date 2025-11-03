@@ -62,12 +62,22 @@ const ChangeCredentials = () => {
       const data = await response.json();
       setMfaCodeSent(true);
       
-      // In development, show debug code if provided
+      // Show debug code if provided (always in development)
       if (data.debugCode) {
         setMfaCodeDebug(data.debugCode);
       }
       
       setStep(2);
+      
+      // Scroll to show the code if it's available
+      if (data.debugCode) {
+        setTimeout(() => {
+          const debugElement = document.querySelector('.debug-code');
+          if (debugElement) {
+            debugElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error('Error:', error);
       setErrors(['Erro ao conectar com o servidor. Tente novamente mais tarde.']);
@@ -183,8 +193,11 @@ const ChangeCredentials = () => {
             </p>
             {mfaCodeDebug && (
               <div className="debug-code">
-                <strong>Modo Desenvolvimento:</strong> Código MFA: <code>{mfaCodeDebug}</code>
-                <small>(Este código só aparece em desenvolvimento)</small>
+                <strong>🔑 Modo Desenvolvimento - Código MFA:</strong>
+                <div className="code-display">
+                  <code onClick={() => navigator.clipboard.writeText(mfaCodeDebug)} title="Clique para copiar">{mfaCodeDebug}</code>
+                </div>
+                <small>Este código também aparece no console do backend. Clique no código para copiar.</small>
               </div>
             )}
             <button
@@ -242,9 +255,21 @@ const ChangeCredentials = () => {
                 />
                 <p className="field-hint">Código de 6 dígitos enviado para seu email</p>
                 {mfaCodeDebug && (
-                  <p className="field-hint" style={{ color: '#19528d', fontWeight: 'bold' }}>
-                    Modo Dev: {mfaCodeDebug}
-                  </p>
+                  <div className="field-hint" style={{ background: '#e7f3ff', padding: '8px', borderRadius: '6px', marginTop: '8px' }}>
+                    <strong style={{ color: '#19528d' }}>Modo Dev:</strong>{' '}
+                    <code style={{ 
+                      background: 'white', 
+                      padding: '4px 8px', 
+                      borderRadius: '4px', 
+                      fontWeight: 'bold',
+                      color: '#19528d',
+                      cursor: 'pointer'
+                    }} 
+                    onClick={() => navigator.clipboard.writeText(mfaCodeDebug)}
+                    title="Clique para copiar">
+                      {mfaCodeDebug}
+                    </code>
+                  </div>
                 )}
               </div>
             </div>

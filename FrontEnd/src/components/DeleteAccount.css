@@ -89,22 +89,55 @@
 }
 
 .debug-code {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: #fee;
+  border: 3px solid #e74c3c;
   border-radius: 8px;
-  padding: 12px;
-  margin: 16px 0;
-  font-size: 0.9rem;
+  padding: 16px;
+  margin: 20px 0;
+  font-size: 0.95rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  }
+}
+
+.code-display {
+  margin: 12px 0;
 }
 
 .debug-code code {
-  background: #f8f9fa;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background: white;
+  padding: 12px 24px;
+  border-radius: 8px;
   font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
+  font-size: 2rem;
   font-weight: bold;
   color: #e74c3c;
+  display: inline-block;
+  margin: 8px 0;
+  border: 3px solid #e74c3c;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: all;
+  letter-spacing: 4px;
+}
+
+.debug-code code:hover {
+  background: #fee;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.debug-code code:active {
+  transform: scale(0.98);
 }
 
 .debug-code small {

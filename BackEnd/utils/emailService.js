@@ -6,14 +6,24 @@ function sendEmail(to, subject, htmlContent) {
   // Mock email service - in development, just log to console
   // In production, replace with actual email service API call
   
-  console.log('='.repeat(60));
-  console.log('📧 EMAIL SENT (Mock Service)');
-  console.log('='.repeat(60));
+  // Extract code from HTML content for easier debugging
+  const codeMatch = htmlContent.match(/(\d{6})/);
+  const extractedCode = codeMatch ? codeMatch[1] : 'N/A';
+  
+  console.log('='.repeat(70));
+  console.log('📧 EMAIL SENT (Mock Service - Development Mode)');
+  console.log('='.repeat(70));
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
-  console.log('-'.repeat(60));
+  console.log('-'.repeat(70));
+  console.log(`🔑 CÓDIGO DE VERIFICAÇÃO: ${extractedCode}`);
+  console.log('-'.repeat(70));
+  console.log('Email Content:');
   console.log(htmlContent);
-  console.log('='.repeat(60));
+  console.log('='.repeat(70));
+  console.log('');
+  console.log('💡 DICA: Este código também está disponível na resposta da API e na interface.');
+  console.log('='.repeat(70));
   
   // In production, you would do something like:
   // return sendGrid.send({
@@ -26,7 +36,8 @@ function sendEmail(to, subject, htmlContent) {
   // For now, return a promise that resolves immediately
   return Promise.resolve({
     success: true,
-    message: 'Email sent (mock)'
+    message: 'Email sent (mock)',
+    code: extractedCode // Return code for development
   });
 }
 
@@ -47,7 +58,8 @@ function sendMFACode(email, code) {
     </div>
   `;
   
-  return sendEmail(email, subject, htmlContent);
+  const result = sendEmail(email, subject, htmlContent);
+  return result.then(res => ({ ...res, code }));
 }
 
 function sendAccountDeletionCode(email, code) {
@@ -69,7 +81,8 @@ function sendAccountDeletionCode(email, code) {
     </div>
   `;
   
-  return sendEmail(email, subject, htmlContent);
+  const result = sendEmail(email, subject, htmlContent);
+  return result.then(res => ({ ...res, code }));
 }
 
 module.exports = {

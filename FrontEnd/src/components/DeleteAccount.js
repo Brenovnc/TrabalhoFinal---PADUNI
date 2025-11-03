@@ -60,12 +60,22 @@ const DeleteAccount = () => {
       const data = await response.json();
       setCodeSent(true);
       
-      // In development, show debug code if provided
+      // Show debug code if provided (always in development)
       if (data.debugCode) {
         setDebugCode(data.debugCode);
       }
       
       setStep(2);
+      
+      // Scroll to show the code if it's available
+      if (data.debugCode) {
+        setTimeout(() => {
+          const debugElement = document.querySelector('.debug-code');
+          if (debugElement) {
+            debugElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error('Error:', error);
       setErrors(['Erro ao conectar com o servidor. Tente novamente mais tarde.']);
@@ -187,8 +197,11 @@ const DeleteAccount = () => {
 
             {debugCode && (
               <div className="debug-code">
-                <strong>Modo Desenvolvimento:</strong> Código: <code>{debugCode}</code>
-                <small>(Este código só aparece em desenvolvimento)</small>
+                <strong>🔑 Modo Desenvolvimento - Código de Confirmação:</strong>
+                <div className="code-display">
+                  <code onClick={() => navigator.clipboard.writeText(debugCode)} title="Clique para copiar">{debugCode}</code>
+                </div>
+                <small>Este código também aparece no console do backend. Clique no código para copiar.</small>
               </div>
             )}
 
@@ -260,9 +273,21 @@ const DeleteAccount = () => {
                 />
                 <p className="field-hint">Código de 6 dígitos enviado para seu email</p>
                 {debugCode && (
-                  <p className="field-hint" style={{ color: '#19528d', fontWeight: 'bold' }}>
-                    Modo Dev: {debugCode}
-                  </p>
+                  <div className="field-hint" style={{ background: '#fee', padding: '8px', borderRadius: '6px', marginTop: '8px' }}>
+                    <strong style={{ color: '#e74c3c' }}>Modo Dev:</strong>{' '}
+                    <code style={{ 
+                      background: 'white', 
+                      padding: '4px 8px', 
+                      borderRadius: '4px', 
+                      fontWeight: 'bold',
+                      color: '#e74c3c',
+                      cursor: 'pointer'
+                    }} 
+                    onClick={() => navigator.clipboard.writeText(debugCode)}
+                    title="Clique para copiar">
+                      {debugCode}
+                    </code>
+                  </div>
                 )}
               </div>
             </div>

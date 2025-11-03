@@ -36,24 +36,21 @@
     "createdAt": "2025-11-03T03:41:21.156Z"
   },
   {
-    "id": "1762144017074",
-    "fullName": "11111111111",
+    "id": "1762144642471",
+    "fullName": "dsfsd",
     "email": "1111111@gmail.com",
-    "password": "$2b$10$NUUtMnlSeJtWLO3uM/aRqeiwQ3o/rnkVe/GUmNALjktWl8yaFVYoS",
-    "yearOfBirth": "1998",
+    "password": "$2b$10$Kqks29gKCAdBLe3D.9/z8OrN6.sdqnFBOdZKvd9OpZbQo086bbOXG",
+    "yearOfBirth": "1997",
     "gender": "Masculino",
-    "course": "Engenharia Civil",
-    "yearOfEntry": "2020",
+    "course": "Engenharia Física",
+    "yearOfEntry": "2010",
     "interests": [
-      "Arte",
-      "Jogos",
-      "Academia",
-      "Idiomas",
-      "Viagens",
-      "Dança",
-      "Tecnologia"
+      "Esportes",
+      "Fotografia",
+      "Literatura",
+      "Teatro"
     ],
     "userType": "veterano",
-    "createdAt": "2025-11-03T04:26:57.074Z"
+    "createdAt": "2025-11-03T04:37:22.471Z"
   }
 ]

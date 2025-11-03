@@ -15,6 +15,12 @@ setInterval(() => {
 }, 60000); // Clean up every minute
 
 function generateMFACode() {
+  // In development, use a test code for easier testing
+  // In production, generate random code
+  if (process.env.NODE_ENV !== 'production' && process.env.USE_TEST_CODE === 'true') {
+    return '123456'; // Test code for development
+  }
+  
   // Generate 6-digit code
   return Math.floor(100000 + Math.random() * 900000).toString();
 }

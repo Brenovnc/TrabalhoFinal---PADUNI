@@ -48,6 +48,24 @@ Funcionalidade de cadastro de usuários implementada com:
 
 O sistema determina automaticamente se o usuário é "veterano" ou "calouro" baseado no ano de ingresso.
 
+## Códigos de Verificação (Desenvolvimento)
+
+Em ambiente de desenvolvimento, os códigos MFA (Multi-Factor Authentication) são enviados de duas formas:
+
+1. **Console do Backend**: O código aparece destacado no console do servidor quando você solicita
+2. **Interface do Frontend**: O código também é exibido na tela em uma caixa destacada
+
+### Código de Teste Padrão
+
+Para usar um código fixo de teste (`123456`), configure a variável de ambiente:
+
+```bash
+# No BackEnd/.env (crie o arquivo baseado em .env.example)
+USE_TEST_CODE=true
+```
+
+Quando `USE_TEST_CODE=true`, todos os códigos MFA serão `123456`, facilitando os testes.
+
 ## Como executar
 
 **⚠️ IMPORTANTE:** Ambos os servidores (FrontEnd e BackEnd) devem estar rodando simultaneamente para que a aplicação funcione corretamente!

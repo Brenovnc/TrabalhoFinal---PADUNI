@@ -304,20 +304,29 @@ router.post('/request-mfa-code', authenticateToken, async (req, res) => {
 
     // Send code via email
     try {
-      await sendMFACode(user.email, code);
+      const emailResult = await sendMFACode(user.email, code);
       
-      res.status(200).json({
+      // Always return the code in development mode
+      const response = {
         success: true,
         message: 'Código de verificação enviado para o seu email.'
-      });
+      };
+      
+      // Always include code in development (NODE_ENV is typically not set in dev)
+      // Check if we're in development by checking if NODE_ENV is not 'production'
+      if (process.env.NODE_ENV !== 'production' || !process.env.NODE_ENV) {
+        response.debugCode = code;
+        response.message += ' (Verifique também o console do servidor)';
+      }
+      
+      res.status(200).json(response);
     } catch (emailError) {
       console.error('Error sending email:', emailError);
-      // In development, we still return success as email is mocked
-      // In production, you might want to handle this differently
+      // Even if email fails, return code in development
       res.status(200).json({
         success: true,
-        message: 'Código de verificação gerado. Verifique o console do servidor em desenvolvimento.',
-        debugCode: code // Only in development!
+        message: 'Código de verificação gerado. Verifique o console do servidor.',
+        debugCode: code // Always include in development
       });
     }
   } catch (error) {
@@ -484,19 +493,29 @@ router.post('/request-deletion-code', authenticateToken, async (req, res) => {
 
     // Send deletion confirmation code via email
     try {
-      await sendAccountDeletionCode(user.email, code);
+      const emailResult = await sendAccountDeletionCode(user.email, code);
       
-      res.status(200).json({
+      // Always return the code in development mode
+      const response = {
         success: true,
         message: 'Código de confirmação enviado para o seu email.'
-      });
+      };
+      
+      // Always include code in development (NODE_ENV is typically not set in dev)
+      // Check if we're in development by checking if NODE_ENV is not 'production'
+      if (process.env.NODE_ENV !== 'production' || !process.env.NODE_ENV) {
+        response.debugCode = code;
+        response.message += ' (Verifique também o console do servidor)';
+      }
+      
+      res.status(200).json(response);
     } catch (emailError) {
       console.error('Error sending email:', emailError);
-      // In development, we still return success as email is mocked
+      // Even if email fails, return code in development
       res.status(200).json({
         success: true,
-        message: 'Código de confirmação gerado. Verifique o console do servidor em desenvolvimento.',
-        debugCode: code // Only in development!
+        message: 'Código de confirmação gerado. Verifique o console do servidor.',
+        debugCode: code // Always include in development
       });
     }
   } catch (error) {
