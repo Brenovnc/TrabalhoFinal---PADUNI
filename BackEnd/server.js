@@ -8,6 +8,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
+const usersRoutes = require('./routes/users');
+app.use('/api/users', usersRoutes);
+
 // Rota de teste
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend funcionando corretamente!' });
