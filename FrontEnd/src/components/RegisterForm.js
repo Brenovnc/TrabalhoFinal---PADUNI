@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './RegisterForm.css';
 
-const RegisterForm = () => {
+const RegisterForm = ({ navigateToLogin }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -134,8 +134,12 @@ const RegisterForm = () => {
 
       // Redirect after 2 seconds
       setTimeout(() => {
-        // In a real app, you would redirect to login or home page
-        window.location.href = '/';
+        // Redirect to login page after successful registration
+        if (navigateToLogin) {
+          navigateToLogin();
+        } else {
+          window.location.href = '/login';
+        }
       }, 2000);
     } catch (error) {
       console.error('Error:', error);
@@ -339,6 +343,24 @@ const RegisterForm = () => {
             {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
         </form>
+
+        <div className="register-footer">
+          <p>Já tem uma conta?{' '}
+            <a 
+              href="/login" 
+              onClick={(e) => {
+                e.preventDefault();
+                if (navigateToLogin) {
+                  navigateToLogin();
+                } else {
+                  window.location.href = '/login';
+                }
+              }}
+            >
+              Faça login
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

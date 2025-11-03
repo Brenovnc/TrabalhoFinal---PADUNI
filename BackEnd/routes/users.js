@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 const { addUser, findUserByEmail } = require('../utils/fileStorage');
 const { validateUserData } = require('../utils/validators');
+const { generateToken } = require('../utils/jwt');
+const { checkRateLimit, recordFailedAttempt, clearAttempts } = require('../utils/rateLimiter');
 
 // POST /api/users/register - Cadastrar novo usuário
 router.post('/register', async (req, res) => {
@@ -71,5 +73,78 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// POST /api/users/login - Fazer login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Credenciais inválidas, verifique as informações'
+      });
+    }
+
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check rate limit (use email as identifier)
+    const rateLimitCheck = checkRateLimit(normalizedEmail);
+    if (rateLimitCheck.blocked) {
+      return res.status(429).json({
+        success: false,
+        message: `Muitas tentativas de login. Acesso bloqueado por ${rateLimitCheck.minutesLeft} minutos.`
+      });
+    }
+
+    // Find user by email
+    const user = await findUserByEmail(normalizedEmail);
+    
+    // Always return generic message if user not found or password incorrect
+    if (!user) {
+      recordFailedAttempt(normalizedEmail);
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciais inválidas, verifique as informações'
+      });
+    }
+
+    // Compare password with hash
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+      recordFailedAttempt(normalizedEmail);
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciais inválidas, verifique as informações'
+      });
+    }
+
+    // Clear failed attempts on successful login
+    clearAttempts(normalizedEmail);
+
+    // Generate JWT token
+    const token = generateToken(user);
+
+    // Return success with token (don't return password hash)
+    const { password: _, ...userResponse } = user;
+
+    res.status(200).json({
+      success: true,
+      message: 'Login realizado com sucesso',
+      token,
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor. Tente novamente mais tarde.'
+    });
+  }
+});
+
 module.exports = router;
+
 

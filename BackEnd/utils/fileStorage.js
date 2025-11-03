@@ -45,13 +45,21 @@ async function addUser(user) {
 // Find user by email
 async function findUserByEmail(email) {
   const users = await readUsers();
-  return users.find(user => user.email === email);
+  return users.find(user => user.email === email.toLowerCase());
+}
+
+// Find user by ID
+async function findUserById(id) {
+  const users = await readUsers();
+  return users.find(user => user.id === id);
 }
 
 module.exports = {
   readUsers,
   writeUsers,
   addUser,
-  findUserByEmail
+  findUserByEmail,
+  findUserById
 };
+
 

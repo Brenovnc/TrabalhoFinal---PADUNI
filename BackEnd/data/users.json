@@ -15,5 +15,22 @@
     ],
     "userType": "veterano",
     "createdAt": "2025-11-03T03:26:54.809Z"
+  },
+  {
+    "id": "1762141281156",
+    "fullName": "teste02",
+    "email": "teste02@gmail.com",
+    "password": "$2b$10$oFNpsrL0n8dgtUuChya3SeHi/b9Ykb2cZMaZ0mp/YQOxEJVrD7Zoi",
+    "yearOfBirth": "1997",
+    "gender": "Feminino",
+    "course": "Matemática",
+    "yearOfEntry": "2020",
+    "interests": [
+      "Música",
+      "Cinema",
+      "Jogos"
+    ],
+    "userType": "veterano",
+    "createdAt": "2025-11-03T03:41:21.156Z"
   }
 ]
