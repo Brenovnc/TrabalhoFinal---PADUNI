@@ -4,6 +4,7 @@ import LoginForm from './components/LoginForm';
 import Home from './components/Home';
 import ProfileView from './components/ProfileView';
 import ProfileEdit from './components/ProfileEdit';
+import ChangeCredentials from './components/ChangeCredentials';
 import { isAuthenticated } from './utils/auth';
 import './App.css';
 
@@ -30,6 +31,12 @@ function App() {
       // Check if user wants to edit profile
       if (isAuthenticated() && (path === '/profile/edit' || path === '/perfil/editar')) {
         setCurrentView('profileEdit');
+        return;
+      }
+
+      // Check if user wants to change credentials
+      if (isAuthenticated() && (path === '/change-credentials' || path === '/alterar-credenciais')) {
+        setCurrentView('changeCredentials');
         return;
       }
 
@@ -72,6 +79,9 @@ function App() {
     } else if (view === 'profileEdit') {
       window.history.pushState({}, '', '/profile/edit');
       setCurrentView('profileEdit');
+    } else if (view === 'changeCredentials') {
+      window.history.pushState({}, '', '/change-credentials');
+      setCurrentView('changeCredentials');
     } else {
       window.history.pushState({}, '', '/login');
       setCurrentView('login');
@@ -79,6 +89,14 @@ function App() {
   };
 
   // Render appropriate component based on current view
+  if (currentView === 'changeCredentials') {
+    return (
+      <div className="App">
+        <ChangeCredentials />
+      </div>
+    );
+  }
+
   if (currentView === 'profileEdit') {
     return (
       <div className="App">

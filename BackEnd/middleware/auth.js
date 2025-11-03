@@ -1,4 +1,5 @@
 const { verifyToken } = require('../utils/jwt');
+const { isTokenBlacklisted } = require('../utils/tokenBlacklist');
 
 // Middleware to authenticate JWT tokens
 function authenticateToken(req, res, next) {
@@ -10,6 +11,14 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({
       success: false,
       message: 'Token de acesso não fornecido'
+    });
+  }
+
+  // Check if token is blacklisted
+  if (isTokenBlacklisted(token)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Token inválido (sessão encerrada)'
     });
   }
 

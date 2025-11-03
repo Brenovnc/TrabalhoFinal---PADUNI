@@ -198,6 +198,12 @@ const ProfileView = () => {
           >
             Editar Perfil
           </button>
+          <button 
+            onClick={() => window.location.href = '/change-credentials'} 
+            className="change-credentials-button"
+          >
+            Alterar Email/Senha
+          </button>
         </div>
       </div>
     </div>
