@@ -282,8 +282,7 @@ const ProfileEdit = () => {
                   <option value="">Selecione</option>
                   <option value="Masculino">Masculino</option>
                   <option value="Feminino">Feminino</option>
-                  <option value="Não-binário">Não-binário</option>
-                  <option value="Prefiro não informar">Prefiro não informar</option>
+                  <option value="Outro">Outro</option>
                 </select>
               </div>
             </div>
