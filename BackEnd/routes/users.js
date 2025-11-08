@@ -300,7 +300,7 @@ router.post('/request-mfa-code', authenticateToken, async (req, res) => {
     }
 
     // Generate and store MFA code
-    const code = createMFACode(userId, user.email);
+    const code = await createMFACode(userId, user.email);
 
     // Send code via email
     try {
@@ -379,7 +379,7 @@ router.put('/change-credentials', authenticateToken, async (req, res) => {
     }
 
     // Verify MFA code
-    const mfaVerification = verifyMFACode(userId, mfaCode);
+    const mfaVerification = await verifyMFACode(userId, mfaCode);
     if (!mfaVerification.valid) {
       return res.status(401).json({
         success: false,
@@ -449,7 +449,7 @@ router.put('/change-credentials', authenticateToken, async (req, res) => {
     }
 
     // Invalidate MFA code
-    invalidateMFACode(userId);
+    await invalidateMFACode(userId);
 
     // Get token from request to blacklist it
     const authHeader = req.headers['authorization'];
@@ -489,7 +489,7 @@ router.post('/request-deletion-code', authenticateToken, async (req, res) => {
     }
 
     // Generate and store MFA code for account deletion
-    const code = createMFACode(userId, user.email);
+    const code = await createMFACode(userId, user.email);
 
     // Send deletion confirmation code via email
     try {
@@ -560,7 +560,7 @@ router.delete('/account', authenticateToken, async (req, res) => {
     }
 
     // Verify confirmation code
-    const codeVerification = verifyMFACode(userId, confirmationCode);
+    const codeVerification = await verifyMFACode(userId, confirmationCode);
     if (!codeVerification.valid) {
       return res.status(401).json({
         success: false,
@@ -596,7 +596,7 @@ router.delete('/account', authenticateToken, async (req, res) => {
     }
 
     // Invalidate MFA code
-    invalidateMFACode(userId);
+    await invalidateMFACode(userId);
 
     // Get token from request to blacklist it
     const authHeader = req.headers['authorization'];
