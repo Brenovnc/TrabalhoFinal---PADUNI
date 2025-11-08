@@ -1,6 +1,15 @@
 -- #######################################################
 -- # SCRIPT DE CRIACAO DO BANCO DE DADOS PADUNI (PostgreSQL)
 -- #######################################################
+--
+-- NOTAS SOBRE FOREIGN KEYS E EXCLUSÃO DE USUÁRIOS:
+-- - Todas as foreign keys que referenciam usuarios_table usam ON DELETE SET NULL
+--   Isso permite hard delete de usuários (LGPD compliant) mantendo dados históricos
+--   (logs, matches, mensagens, agendamentos) sem referência ao usuário deletado
+-- - A foreign key curso_id em usuarios_table usa ON DELETE RESTRICT
+--   (não permite deletar curso se houver usuários usando-o)
+--
+-- #######################################################
 
 -- 1. CRIACAO DOS TIPOS ENUM
 ----------------------------------------------
@@ -89,8 +98,9 @@ CREATE TABLE matches_table (
     id BIGSERIAL PRIMARY KEY,
 
     -- Chaves Estrangeiras para Usuarios
-    id_usuario_veterano BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    id_usuario_calouro BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    -- ON DELETE SET NULL permite deletar usuários mantendo os matches (sem referência)
+    id_usuario_veterano BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    id_usuario_calouro BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
 
     -- Restricao de unicidade para o par (o mesmo par nao pode ter mais de um registro)
     UNIQUE (id_usuario_veterano, id_usuario_calouro),
@@ -116,8 +126,9 @@ CREATE TABLE mensagens_table (
 
     -- Chaves Estrangeiras
     id_match BIGINT REFERENCES matches_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    id_usuario_remetente BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    id_usuario_destinatario BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    -- ON DELETE SET NULL permite deletar usuários mantendo as mensagens (sem referência)
+    id_usuario_remetente BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    id_usuario_destinatario BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
 
     -- Conteudo
     conteudo VARCHAR(2000) NOT NULL,
@@ -135,7 +146,8 @@ CREATE TABLE agendamentos_ia_table (
     id BIGSERIAL PRIMARY KEY,
 
     -- Chave Estrangeira para o Administrador responsavel
-    id_usuario_admin_agendador BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    -- ON DELETE SET NULL permite deletar admin mantendo os agendamentos (sem referência)
+    id_usuario_admin_agendador BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
 
     status status_agendamento_ia NOT NULL,
 
@@ -157,7 +169,8 @@ CREATE TABLE logs_acao_critica_table (
     id BIGSERIAL PRIMARY KEY,
 
     -- Chave Estrangeira para o Administrador responsavel
-    id_usuario_responsavel BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+    -- ON DELETE SET NULL permite deletar usuários mantendo os logs (sem referência)
+    id_usuario_responsavel BIGINT REFERENCES usuarios_table(id) ON UPDATE CASCADE ON DELETE SET NULL,
 
     -- Detalhes da Acao
     acao VARCHAR(255) NOT NULL,
