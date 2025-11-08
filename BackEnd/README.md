@@ -84,3 +84,15 @@ O backend utiliza PostgreSQL com as seguintes tabelas principais:
 - `agendamentos_ia_table` - Agendamentos de execução da IA
 - `logs_acao_critica_table` - Logs de ações críticas
 
+### Nota sobre Foreign Keys e Exclusão de Usuários
+
+O schema foi projetado para permitir **hard delete** de usuários (conforme LGPD), mantendo a integridade dos dados históricos:
+
+- **Foreign keys que referenciam `usuarios_table`**: Usam `ON DELETE SET NULL`
+  - Permite deletar usuários mantendo logs, matches, mensagens e agendamentos
+  - Os registros históricos são preservados, mas sem referência ao usuário deletado
+  
+- **Foreign key `curso_id` em `usuarios_table`**: Usa `ON DELETE RESTRICT`
+  - Impede deletar um curso se houver usuários usando-o
+  - Garante integridade referencial dos cursos
+
