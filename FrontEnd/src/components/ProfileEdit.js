@@ -32,7 +32,8 @@ const ProfileEdit = () => {
     'Administração',
     'Ciências da Computação',
     'Matemática',
-    'Física'
+    'Física',
+    'Sistemas de Informação'
   ];
 
   useEffect(() => {
