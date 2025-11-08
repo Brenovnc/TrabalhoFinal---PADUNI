@@ -151,15 +151,13 @@ const ProfileView = () => {
             </div>
           </div>
 
-          {user.interests && user.interests.length > 0 && (
+          {user.interests && (typeof user.interests === 'string' ? user.interests.trim() : (Array.isArray(user.interests) ? user.interests.join(', ') : '')).length > 0 && (
             <div className="profile-section">
               <h2 className="section-title">Interesses</h2>
               <div className="interests-container">
-                {user.interests.map((interest, index) => (
-                  <span key={index} className="interest-badge">
-                    {interest}
-                  </span>
-                ))}
+                <p className="interests-text">
+                  {typeof user.interests === 'string' ? user.interests : (Array.isArray(user.interests) ? user.interests.join(', ') : '')}
+                </p>
               </div>
             </div>
           )}

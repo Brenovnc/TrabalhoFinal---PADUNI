@@ -103,20 +103,15 @@
 }
 
 .interests-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
   margin-top: 12px;
 }
 
-.interest-badge {
-  background: linear-gradient(135deg, rgba(25, 82, 141, 0.1), rgba(247, 204, 70, 0.1));
-  color: #19528d;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border: 1px solid rgba(25, 82, 141, 0.2);
+.interests-text {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .loading-message,

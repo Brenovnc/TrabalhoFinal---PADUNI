@@ -90,47 +90,29 @@
   gap: 20px;
 }
 
-.interests-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+.interests-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
   margin-top: 8px;
 }
 
-.interest-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: white;
-}
-
-.interest-checkbox:hover {
+.interests-textarea:focus {
+  outline: none;
   border-color: #19528d;
-  background: #f8f9fa;
 }
 
-.interest-checkbox input[type="checkbox"] {
-  margin: 0;
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
-  accent-color: #19528d;
-}
-
-.interest-checkbox input[type="checkbox"]:checked + span {
-  font-weight: 600;
-  color: #19528d;
-}
-
-.interest-checkbox:has(input[type="checkbox"]:checked) {
-  border-color: #19528d;
-  background: linear-gradient(135deg, rgba(25, 82, 141, 0.05), rgba(247, 204, 70, 0.05));
-  box-shadow: 0 2px 8px rgba(25, 82, 141, 0.15);
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
 }
 
 .submit-button {

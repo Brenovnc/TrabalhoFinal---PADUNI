@@ -46,8 +46,14 @@ function validateEditableProfileData(profileData) {
 
   // Interests validation
   if (profileData.interests !== undefined) {
-    if (!profileData.interests || profileData.interests.length === 0) {
-      errors.push('Selecione pelo menos um interesse');
+    const interestsStr = typeof profileData.interests === 'string' 
+      ? profileData.interests.trim() 
+      : (Array.isArray(profileData.interests) ? profileData.interests.join(', ') : '');
+    
+    if (!interestsStr || interestsStr.length === 0) {
+      errors.push('Interesses são obrigatórios');
+    } else if (interestsStr.length > 600) {
+      errors.push('Interesses devem ter no máximo 600 caracteres');
     }
   }
 

@@ -72,8 +72,12 @@ function validateUserData(userData) {
     errors.push('Ano de ingresso é obrigatório');
   }
 
-  if (!userData.interests || userData.interests.length === 0) {
-    errors.push('Selecione pelo menos um interesse');
+  if (!userData.interests || (typeof userData.interests === 'string' ? userData.interests.trim() : '').length === 0) {
+    errors.push('Interesses são obrigatórios');
+  } else if (typeof userData.interests === 'string' && userData.interests.trim().length > 600) {
+    errors.push('Interesses devem ter no máximo 600 caracteres');
+  } else if (Array.isArray(userData.interests) && userData.interests.join(', ').length > 600) {
+    errors.push('Interesses devem ter no máximo 600 caracteres');
   }
 
   return {

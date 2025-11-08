@@ -11,31 +11,13 @@ const RegisterForm = ({ navigateToLogin }) => {
     gender: '',
     course: '',
     yearOfEntry: '',
-    interests: []
+    interests: ''
   });
 
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Common interests for university students
-  const availableInterests = [
-    'Esportes',
-    'Música',
-    'Arte',
-    'Tecnologia',
-    'Literatura',
-    'Cinema',
-    'Jogos',
-    'Dança',
-    'Teatro',
-    'Voluntariado',
-    'Academia',
-    'Viagens',
-    'Fotografia',
-    'Culinária',
-    'Idiomas'
-  ];
 
   // Common courses at Unifei
   const availableCourses = [
@@ -65,14 +47,6 @@ const RegisterForm = ({ navigateToLogin }) => {
     }
   };
 
-  const handleInterestChange = (interest) => {
-    setFormData(prev => {
-      const interests = prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest];
-      return { ...prev, interests };
-    });
-  };
 
   const generateYearOptions = (startYear, endYear) => {
     const years = [];
@@ -129,7 +103,7 @@ const RegisterForm = ({ navigateToLogin }) => {
         gender: '',
         course: '',
         yearOfEntry: '',
-        interests: []
+        interests: ''
       });
 
       // Redirect after 2 seconds
@@ -318,21 +292,21 @@ const RegisterForm = ({ navigateToLogin }) => {
           </div>
 
           <div className="form-group">
-            <label>
+            <label htmlFor="interests">
               Interesses <span className="required">*</span>
             </label>
-            <div className="interests-grid">
-              {availableInterests.map(interest => (
-                <label key={interest} className="interest-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={formData.interests.includes(interest)}
-                    onChange={() => handleInterestChange(interest)}
-                  />
-                  <span>{interest}</span>
-                </label>
-              ))}
-            </div>
+            <textarea
+              id="interests"
+              name="interests"
+              value={formData.interests}
+              onChange={handleChange}
+              required
+              maxLength={600}
+              placeholder="Descreva seus interesses (máximo 600 caracteres)"
+              rows={4}
+              className="interests-textarea"
+            />
+            <span className="char-count">{formData.interests.length}/600</span>
           </div>
 
           <button 

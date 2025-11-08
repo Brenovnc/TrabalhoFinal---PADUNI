@@ -9,7 +9,7 @@ const ProfileEdit = () => {
     gender: '',
     course: '',
     yearOfEntry: '',
-    interests: [],
+    interests: '',
     currentPassword: ''
   });
 
@@ -18,24 +18,6 @@ const ProfileEdit = () => {
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
-  // Common interests for university students
-  const availableInterests = [
-    'Esportes',
-    'Música',
-    'Arte',
-    'Tecnologia',
-    'Literatura',
-    'Cinema',
-    'Jogos',
-    'Dança',
-    'Teatro',
-    'Voluntariado',
-    'Academia',
-    'Viagens',
-    'Fotografia',
-    'Culinária',
-    'Idiomas'
-  ];
 
   // Common courses at Unifei
   const availableCourses = [
@@ -89,7 +71,7 @@ const ProfileEdit = () => {
             gender: data.user.gender || '',
             course: data.user.course || '',
             yearOfEntry: data.user.yearOfEntry || '',
-            interests: Array.isArray(data.user.interests) ? data.user.interests : [],
+            interests: typeof data.user.interests === 'string' ? data.user.interests : (Array.isArray(data.user.interests) ? data.user.interests.join(', ') : ''),
             currentPassword: ''
           });
         }
@@ -104,7 +86,7 @@ const ProfileEdit = () => {
             gender: cachedUser.gender || '',
             course: cachedUser.course || '',
             yearOfEntry: cachedUser.yearOfEntry || '',
-            interests: Array.isArray(cachedUser.interests) ? cachedUser.interests : [],
+            interests: typeof cachedUser.interests === 'string' ? cachedUser.interests : (Array.isArray(cachedUser.interests) ? cachedUser.interests.join(', ') : ''),
             currentPassword: ''
           });
         }
@@ -128,14 +110,6 @@ const ProfileEdit = () => {
     }
   };
 
-  const handleInterestChange = (interest) => {
-    setFormData(prev => {
-      const interests = prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest];
-      return { ...prev, interests };
-    });
-  };
 
   const generateYearOptions = (startYear, endYear) => {
     const years = [];
@@ -360,21 +334,21 @@ const ProfileEdit = () => {
           <div className="form-section">
             <h2 className="section-title">Interesses</h2>
             <div className="form-group">
-              <label>
+              <label htmlFor="interests">
                 Interesses <span className="required">*</span>
               </label>
-              <div className="interests-grid">
-                {availableInterests.map(interest => (
-                  <label key={interest} className="interest-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formData.interests.includes(interest)}
-                      onChange={() => handleInterestChange(interest)}
-                    />
-                    <span>{interest}</span>
-                  </label>
-                ))}
-              </div>
+              <textarea
+                id="interests"
+                name="interests"
+                value={formData.interests}
+                onChange={handleChange}
+                required
+                maxLength={600}
+                placeholder="Descreva seus interesses (máximo 600 caracteres)"
+                rows={4}
+                className="interests-textarea"
+              />
+              <span className="char-count">{formData.interests.length}/600</span>
             </div>
           </div>
 

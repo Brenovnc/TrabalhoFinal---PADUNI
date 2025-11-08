@@ -58,7 +58,9 @@ const Home = () => {
             </div>
             <div className="info-item">
               <span className="info-label">Interesses:</span>
-              <span className="info-value">{user.interests.join(', ')}</span>
+              <span className="info-value">
+                {typeof user.interests === 'string' ? user.interests : (Array.isArray(user.interests) ? user.interests.join(', ') : 'N/A')}
+              </span>
             </div>
           </div>
         </div>

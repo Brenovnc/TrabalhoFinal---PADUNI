@@ -1,44 +1,109 @@
-// Email service for sending MFA codes
-// This is a mock implementation for development
-// In production, integrate with a real email service (SendGrid, SES, etc.)
+// Email service for sending MFA codes using Nodemailer
+const nodemailer = require('nodemailer');
 
-function sendEmail(to, subject, htmlContent) {
-  // Mock email service - in development, just log to console
-  // In production, replace with actual email service API call
+// Configuração do transporter de email
+// Suporta variáveis de ambiente ou modo de desenvolvimento (mock)
+function createTransporter() {
+  // Verifica se as variáveis de ambiente estão configuradas
+
+  const emailHost = process.env.EMAIL_HOST;
+  const emailPort = process.env.EMAIL_PORT || 587;
+  const emailUser = process.env.EMAIL_USER;
+  const emailPassword = process.env.EMAIL_PASSWORD;
+  const emailFrom = process.env.EMAIL_FROM || emailUser || 'noreply@paduni.com';
+  const emailSecure = process.env.EMAIL_SECURE === 'true';
+
+  // Se não houver usuário ou senha, usa modo de desenvolvimento (mock)
+  if (!emailUser || !emailPassword) {
+    return null; // Retorna null para usar modo mock
+  }
+
+  // Configuração do transporter
+  // Para Gmail, usa service ao invés de host (detecta pelo email do usuário)
+  const isGmail = emailUser.includes('@gmail.com') || emailUser.includes('@googlemail.com');
+  
+  if (isGmail) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPassword // Use App Password do Gmail (não a senha normal)
+      }
+    });
+    return transporter;
+  }
+
+  // Para outros provedores, usa configuração SMTP genérica
+  // EMAIL_HOST é obrigatório para provedores não-Gmail
+  if (!emailHost) {
+    console.warn('⚠️ EMAIL_HOST não configurado. Para provedores não-Gmail, configure EMAIL_HOST no .env');
+    return null; // Retorna null para usar modo mock
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: emailHost,
+    port: parseInt(emailPort),
+    secure: emailSecure, // true para 465, false para outras portas
+    auth: {
+      user: emailUser,
+      pass: emailPassword
+    },
+    // Configurações adicionais para melhor compatibilidade
+    tls: {
+      rejectUnauthorized: false // Apenas para desenvolvimento/testes
+    }
+  });
+
+  console.log('transporter :>> ', transporter);
+  return transporter;
+}
+
+async function sendEmail(to, subject, htmlContent) {
+  const transporter = createTransporter();
   
   // Extract code from HTML content for easier debugging
   const codeMatch = htmlContent.match(/(\d{6})/);
   const extractedCode = codeMatch ? codeMatch[1] : 'N/A';
-  
-  console.log('='.repeat(70));
-  console.log('📧 EMAIL SENT (Mock Service - Development Mode)');
-  console.log('='.repeat(70));
-  console.log(`To: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log('-'.repeat(70));
-  console.log(`🔑 CÓDIGO DE VERIFICAÇÃO: ${extractedCode}`);
-  console.log('-'.repeat(70));
-  console.log('Email Content:');
-  console.log(htmlContent);
-  console.log('='.repeat(70));
-  console.log('');
-  console.log('💡 DICA: Este código também está disponível na resposta da API e na interface.');
-  console.log('='.repeat(70));
-  
-  // In production, you would do something like:
-  // return sendGrid.send({
-  //   to: to,
-  //   from: 'noreply@paduni.com',
-  //   subject: subject,
-  //   html: htmlContent
-  // });
-  
-  // For now, return a promise that resolves immediately
-  return Promise.resolve({
-    success: true,
-    message: 'Email sent (mock)',
-    code: extractedCode // Return code for development
-  });
+
+  // Se não houver transporter configurado, usa modo mock (desenvolvimento)
+  if (!transporter) {
+    console.log('Transporter not configured');  
+
+    return Promise.resolve({
+      success: true,
+      message: 'Email sent (mock)',
+      code: extractedCode
+    });
+  }
+
+  // Envia email real usando nodemailer
+  try {
+    const emailFrom = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@paduni.com';
+    
+    const mailOptions = {
+      from: `"PADUNI" <${emailFrom}>`,
+      to: to,
+      subject: subject,
+      html: htmlContent
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log('📧 Email enviado com sucesso!');
+    console.log(`   Message ID: ${info.messageId}`);
+    console.log(`   To: ${to}`);
+    console.log(`   Subject: ${subject}`);
+    
+    return {
+      success: true,
+      message: 'Email enviado com sucesso',
+      messageId: info.messageId,
+      code: extractedCode
+    };
+  } catch (error) {
+    console.error('❌ Erro ao enviar email:', error);
+    throw new Error(`Erro ao enviar email: ${error.message}`);
+  }
 }
 
 function sendMFACode(email, code) {

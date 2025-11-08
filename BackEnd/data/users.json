@@ -52,5 +52,20 @@
     ],
     "userType": "veterano",
     "createdAt": "2025-11-03T04:37:22.471Z"
+  },
+  {
+    "id": "1762615793146",
+    "fullName": "Camille Dunn",
+    "email": "mivaq@mailinator.com",
+    "password": "$2b$10$BE.LNUrW8trCOrrjPpxf1OxDzCv.jGWlY3ojpi3pVu0u58LUCn65i",
+    "yearOfBirth": "2002",
+    "gender": "Masculino",
+    "course": "Ciências da Computação",
+    "yearOfEntry": "2023",
+    "interests": [
+      "gosto de jogar bola, ouvir musica, comer futvoltaaaaa"
+    ],
+    "userType": "veterano",
+    "createdAt": "2025-11-08T15:29:53.146Z"
   }
 ]

@@ -48,23 +48,38 @@ Funcionalidade de cadastro de usuários implementada com:
 
 O sistema determina automaticamente se o usuário é "veterano" ou "calouro" baseado no ano de ingresso.
 
-## Códigos de Verificação (Desenvolvimento)
+## Configuração de Email (Nodemailer)
 
-Em ambiente de desenvolvimento, os códigos MFA (Multi-Factor Authentication) são enviados de duas formas:
+O sistema usa **Nodemailer** para envio de emails reais. Por padrão, funciona em modo mock (desenvolvimento), onde os emails são apenas logados no console.
+
+### Modo Mock (Padrão - Desenvolvimento)
+
+Sem configuração adicional, os códigos MFA são enviados de duas formas:
 
 1. **Console do Backend**: O código aparece destacado no console do servidor quando você solicita
 2. **Interface do Frontend**: O código também é exibido na tela em uma caixa destacada
 
-### Código de Teste Padrão
+### Modo Produção (Envio Real de Emails)
 
-Para usar um código fixo de teste (`123456`), configure a variável de ambiente:
+Para enviar emails reais, configure as variáveis de ambiente no arquivo `BackEnd/.env`:
 
-```bash
-# No BackEnd/.env (crie o arquivo baseado em .env.example)
-USE_TEST_CODE=true
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=seu-email@gmail.com
+EMAIL_PASSWORD=sua-app-password
+EMAIL_FROM=seu-email@gmail.com
+EMAIL_SECURE=false
 ```
 
-Quando `USE_TEST_CODE=true`, todos os códigos MFA serão `123456`, facilitando os testes.
+**Para Gmail:** Você precisa criar uma **App Password** (não use a senha normal). Veja instruções completas em `BackEnd/EMAIL_CONFIG.md`.
+
+**Suporta:**
+- Gmail (detecção automática - não precisa configurar EMAIL_HOST)
+- Outlook/Hotmail (detecção automática - não precisa configurar EMAIL_HOST)
+- SMTP genérico (requer EMAIL_HOST configurado)
+
+Veja `BackEnd/EMAIL_CONFIG.md` para instruções detalhadas de configuração.
 
 ## Como executar
 
@@ -108,10 +123,22 @@ npm test
 
 ## Desenvolvimento
 
-Para desenvolvimento com hot-reload no BackEnd:
+Para desenvolvimento com hot-reload no BackEnd (usando nodemon):
 
 ```bash
 cd BackEnd
-npm run dev
+npm install  # Instala dependências incluindo dotenv
+npm run dev  # Inicia o servidor com nodemon (reinicia automaticamente ao salvar arquivos)
 ```
+
+**Nodemon configurado:**
+- Monitora mudanças em arquivos `.js` e `.json` nas pastas `routes`, `utils`, `middleware` e `server.js`
+- Reinicia automaticamente o servidor quando detecta mudanças
+- Carrega variáveis de ambiente do arquivo `.env` automaticamente
+- Ignora arquivos em `node_modules`, `data/*.json` e logs
+
+**Variáveis de ambiente:**
+- Crie um arquivo `.env` na pasta `BackEnd/` para configurar variáveis de ambiente
+- O `dotenv` carrega automaticamente as variáveis do arquivo `.env`
+- Veja `BackEnd/EMAIL_CONFIG.md` para configuração de email
 

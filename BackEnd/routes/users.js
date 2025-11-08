@@ -54,7 +54,7 @@ router.post('/register', async (req, res) => {
       gender: userData.gender,
       course: userData.course,
       yearOfEntry: userData.yearOfEntry,
-      interests: Array.isArray(userData.interests) ? userData.interests : [userData.interests].filter(Boolean),
+      interests: typeof userData.interests === 'string' ? userData.interests.trim() : (Array.isArray(userData.interests) ? userData.interests.join(', ') : ''),
       userType: userType,
       createdAt: new Date().toISOString()
     };
@@ -248,9 +248,9 @@ router.put('/profile', authenticateToken, async (req, res) => {
       updates.userType = isVeteran ? 'veterano' : 'calouro';
     }
     if (profileData.interests !== undefined) {
-      updates.interests = Array.isArray(profileData.interests) 
-        ? profileData.interests 
-        : [profileData.interests].filter(Boolean);
+      updates.interests = typeof profileData.interests === 'string' 
+        ? profileData.interests.trim() 
+        : (Array.isArray(profileData.interests) ? profileData.interests.join(', ') : '');
     }
 
     // Email and password cannot be updated here (they have separate endpoints)
