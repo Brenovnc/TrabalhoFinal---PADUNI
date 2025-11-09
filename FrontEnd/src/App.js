@@ -1,52 +1,155 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
+import Home from './components/Home';
+import ProfileView from './components/ProfileView';
+import ProfileEdit from './components/ProfileEdit';
+import ChangeCredentials from './components/ChangeCredentials';
+import DeleteAccount from './components/DeleteAccount';
+import { isAuthenticated } from './utils/auth';
 import './App.css';
 
 function App() {
-  const [message, setMessage] = useState('');
+  const [currentView, setCurrentView] = useState('login');
 
   useEffect(() => {
-    // Testando conexão com o backend via proxy
-    console.log('Tentando conectar ao backend via /api/test...');
-    fetch('/api/test', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
+    // Check URL to determine which view to show
+    const updateView = () => {
+      const path = window.location.pathname;
+      
+      // If user is authenticated and on home, show home
+      if (isAuthenticated() && (path === '/' || path === '/home')) {
+        setCurrentView('home');
+        return;
       }
-    })
-      .then(res => {
-        console.log('Resposta recebida:', res.status, res.statusText);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Dados recebidos:', data);
-        setMessage(data.message);
-      })
-      .catch(err => {
-        console.error('Erro ao conectar via proxy:', err);
-        // Tentar conectar diretamente como fallback
-        console.log('Tentando conexão direta...');
-        fetch('http://localhost:3001/api/test')
-          .then(res => res.json())
-          .then(data => {
-            console.log('Conexão direta funcionou!', data);
-            setMessage(`Conexão direta OK: ${data.message}`);
-          })
-          .catch(e => {
-            console.error('Erro na conexão direta também:', e);
-            setMessage(`Erro: ${err.message}. Verifique o console para mais detalhes.`);
-          });
-      });
+
+      // Check if user wants to view profile
+      if (isAuthenticated() && (path === '/profile' || path === '/perfil')) {
+        setCurrentView('profile');
+        return;
+      }
+
+      // Check if user wants to edit profile
+      if (isAuthenticated() && (path === '/profile/edit' || path === '/perfil/editar')) {
+        setCurrentView('profileEdit');
+        return;
+      }
+
+      // Check if user wants to change credentials
+      if (isAuthenticated() && (path === '/change-credentials' || path === '/alterar-credenciais')) {
+        setCurrentView('changeCredentials');
+        return;
+      }
+
+      // Check if user wants to delete account
+      if (isAuthenticated() && (path === '/delete-account' || path === '/excluir-conta')) {
+        setCurrentView('deleteAccount');
+        return;
+      }
+
+      // Check other routes
+      if (path === '/register' || path === '/cadastro') {
+        setCurrentView('register');
+      } else if (path === '/login') {
+        setCurrentView('login');
+      } else if (isAuthenticated()) {
+        // Authenticated but on unknown route, redirect to home
+        window.history.pushState({}, '', '/');
+        setCurrentView('home');
+      } else {
+        // Not authenticated, show login
+        setCurrentView('login');
+      }
+    };
+
+    updateView();
+
+    // Listen to browser back/forward buttons
+    const handlePopState = () => {
+      updateView();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  const navigateTo = (view) => {
+    if (view === 'register') {
+      window.history.pushState({}, '', '/register');
+      setCurrentView('register');
+    } else if (view === 'home') {
+      window.history.pushState({}, '', '/');
+      setCurrentView('home');
+    } else if (view === 'profile') {
+      window.history.pushState({}, '', '/profile');
+      setCurrentView('profile');
+    } else if (view === 'profileEdit') {
+      window.history.pushState({}, '', '/profile/edit');
+      setCurrentView('profileEdit');
+    } else if (view === 'changeCredentials') {
+      window.history.pushState({}, '', '/change-credentials');
+      setCurrentView('changeCredentials');
+    } else if (view === 'deleteAccount') {
+      window.history.pushState({}, '', '/delete-account');
+      setCurrentView('deleteAccount');
+    } else {
+      window.history.pushState({}, '', '/login');
+      setCurrentView('login');
+    }
+  };
+
+  // Render appropriate component based on current view
+  if (currentView === 'deleteAccount') {
+    return (
+      <div className="App">
+        <DeleteAccount />
+      </div>
+    );
+  }
+
+  if (currentView === 'changeCredentials') {
+    return (
+      <div className="App">
+        <ChangeCredentials />
+      </div>
+    );
+  }
+
+  if (currentView === 'profileEdit') {
+    return (
+      <div className="App">
+        <ProfileEdit />
+      </div>
+    );
+  }
+
+  if (currentView === 'profile') {
+    return (
+      <div className="App">
+        <ProfileView />
+      </div>
+    );
+  }
+
+  if (currentView === 'home') {
+    return (
+      <div className="App">
+        <Home />
+      </div>
+    );
+  }
+
+  if (currentView === 'register') {
+    return (
+      <div className="App">
+        <RegisterForm navigateToLogin={() => navigateTo('login')} />
+      </div>
+    );
+  }
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>FrontEnd React</h1>
-        <p>{message || 'Carregando...'}</p>
-      </header>
+      <LoginForm navigateToRegister={() => navigateTo('register')} />
     </div>
   );
 }
