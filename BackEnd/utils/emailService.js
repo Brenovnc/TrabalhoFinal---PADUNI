@@ -150,9 +150,57 @@ function sendAccountDeletionCode(email, code) {
   return result.then(res => ({ ...res, code }));
 }
 
+/**
+ * Envia notificação de match para calouro ou veterano
+ * @param {string} email - Email do destinatário
+ * @param {string} userName - Nome do usuário que receberá a notificação
+ * @param {string} matchedUserName - Nome do usuário com quem foi feito o match
+ * @param {string} userType - 'calouro' ou 'veterano'
+ */
+function sendMatchNotification(email, userName, matchedUserName, userType) {
+  const isCalouro = userType === 'calouro';
+  const subject = '🎉 Match Realizado - PADUNI';
+  
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #19528d;">🎉 Match Realizado!</h2>
+      <p>Olá, <strong>${userName}</strong>!</p>
+      <p>${isCalouro 
+        ? 'Parabéns! Você foi vinculado(a) a um veterano que poderá te ajudar em sua jornada acadêmica.'
+        : 'Parabéns! Você foi vinculado(a) a um calouro que poderá receber sua orientação e apoio.'
+      }</p>
+      
+      <div style="background: #f0f7ff; border-left: 4px solid #19528d; padding: 20px; margin: 20px 0; border-radius: 4px;">
+        <p style="margin: 0; font-size: 18px; color: #19528d;">
+          <strong>${isCalouro ? 'Seu padrinho:' : 'Seu apadrinhado:'}</strong><br>
+          <span style="font-size: 20px;">${matchedUserName}</span>
+        </p>
+      </div>
+      
+      <p>${isCalouro 
+        ? 'Agora você pode entrar em contato com seu padrinho através da plataforma PADUNI para receber orientações e dicas sobre o curso.'
+        : 'Agora você pode entrar em contato com seu apadrinhado através da plataforma PADUNI para oferecer orientações e apoio.'
+      }</p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" 
+           style="background-color: #19528d; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          Acessar Plataforma
+        </a>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+      <p style="color: #999; font-size: 12px;">Este é um email automático, não responda.</p>
+    </div>
+  `;
+  
+  return sendEmail(email, subject, htmlContent);
+}
+
 module.exports = {
   sendEmail,
   sendMFACode,
-  sendAccountDeletionCode
+  sendAccountDeletionCode,
+  sendMatchNotification
 };
 
