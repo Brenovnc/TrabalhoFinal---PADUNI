@@ -5,7 +5,7 @@ const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = 
 const { processAutomaticMatch } = require('../utils/matchAI');
 const { sendMatchNotification } = require('../utils/emailService');
 const { addLogEntry } = require('../utils/criticalActionsLog');
-const { getMatches, countMatches, gerarMatches } = require('../utils/match');
+const { getMatches, countMatches, gerarMatches, getUserMatch } = require('../utils/match');
 
 /**
  * POST /api/matches/automatic
@@ -254,6 +254,48 @@ router.get('/list', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro ao buscar lista de matches',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
+ * GET /api/matches/user/:userId
+ * Verifica se um usuário tem match e retorna as informações do match
+ * Se não tiver match, retorna "match não encontrado"
+ */
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId || isNaN(parseInt(userId))) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de usuário inválido'
+      });
+    }
+
+    const matchInfo = await getUserMatch(userId);
+
+    if (!matchInfo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match não encontrado',
+        hasMatch: false
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Match encontrado',
+      hasMatch: true,
+      data: matchInfo
+    });
+  } catch (error) {
+    console.error('Error fetching user match:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar match do usuário',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

@@ -334,11 +334,139 @@ async function countMatches(options = {}) {
   }
 }
 
+/**
+ * Busca o match de um usuário específico
+ * Retorna as informações completas do usuário com quem ele fez match
+ * @param {number} userId - ID do usuário
+ * @returns {Promise<Object|null>} - Informações do match ou null se não encontrado
+ */
+async function getUserMatch(userId) {
+  try {
+    // Garante que a coluna score existe
+    await ensureScoreColumn();
+
+    if (!userId || isNaN(parseInt(userId))) {
+      throw new Error('ID de usuário inválido');
+    }
+
+    const userIdNum = parseInt(userId);
+
+    // Busca match onde o usuário está em qualquer posição (veterano ou calouro)
+    const result = await query(`
+      SELECT 
+        m.id as match_id,
+        m.id_usuario_veterano,
+        m.id_usuario_calouro,
+        m.score,
+        m.status,
+        m.data_match,
+        -- Informações do usuário veterano
+        u_veterano.id as veterano_id,
+        u_veterano.nome as veterano_nome,
+        u_veterano.email as veterano_email,
+        u_veterano.ano_nascimento as veterano_ano_nascimento,
+        u_veterano.ano_entrada_unifei as veterano_ano_entrada,
+        u_veterano.interesses as veterano_interesses,
+        u_veterano.genero as veterano_genero,
+        u_veterano.tipo_usuario as veterano_tipo,
+        c_veterano.nome as veterano_curso,
+        -- Informações do usuário calouro
+        u_calouro.id as calouro_id,
+        u_calouro.nome as calouro_nome,
+        u_calouro.email as calouro_email,
+        u_calouro.ano_nascimento as calouro_ano_nascimento,
+        u_calouro.ano_entrada_unifei as calouro_ano_entrada,
+        u_calouro.interesses as calouro_interesses,
+        u_calouro.genero as calouro_genero,
+        u_calouro.tipo_usuario as calouro_tipo,
+        c_calouro.nome as calouro_curso
+      FROM matches_table m
+      LEFT JOIN usuarios_table u_veterano ON m.id_usuario_veterano = u_veterano.id
+      LEFT JOIN usuarios_table u_calouro ON m.id_usuario_calouro = u_calouro.id
+      LEFT JOIN cursos_table c_veterano ON u_veterano.curso_id = c_veterano.id
+      LEFT JOIN cursos_table c_calouro ON u_calouro.curso_id = c_calouro.id
+      WHERE (m.id_usuario_veterano = $1 OR m.id_usuario_calouro = $1)
+        AND m.status = 'ativo'
+      ORDER BY m.data_match DESC
+      LIMIT 1
+    `, [userIdNum]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+
+    // Determina qual usuário é o solicitante e qual é o matchado
+    const isVeterano = row.id_usuario_veterano === userIdNum;
+    
+    // Se o usuário solicitante é o veterano, o matchado é o calouro, e vice-versa
+    const solicitante = isVeterano ? {
+      id: parseInt(row.veterano_id),
+      nome: row.veterano_nome || 'Usuário removido',
+      email: row.veterano_email || null,
+      anoNascimento: row.veterano_ano_nascimento,
+      anoEntrada: row.veterano_ano_entrada,
+      interesses: row.veterano_interesses,
+      genero: row.veterano_genero,
+      tipoUsuario: row.veterano_tipo,
+      curso: row.veterano_curso || null
+    } : {
+      id: parseInt(row.calouro_id),
+      nome: row.calouro_nome || 'Usuário removido',
+      email: row.calouro_email || null,
+      anoNascimento: row.calouro_ano_nascimento,
+      anoEntrada: row.calouro_ano_entrada,
+      interesses: row.calouro_interesses,
+      genero: row.calouro_genero,
+      tipoUsuario: row.calouro_tipo,
+      curso: row.calouro_curso || null
+    };
+
+    const matchado = isVeterano ? {
+      id: parseInt(row.calouro_id),
+      nome: row.calouro_nome || 'Usuário removido',
+      email: row.calouro_email || null,
+      anoNascimento: row.calouro_ano_nascimento,
+      anoEntrada: row.calouro_ano_entrada,
+      interesses: row.calouro_interesses,
+      genero: row.calouro_genero,
+      tipoUsuario: row.calouro_tipo,
+      curso: row.calouro_curso || null
+    } : {
+      id: parseInt(row.veterano_id),
+      nome: row.veterano_nome || 'Usuário removido',
+      email: row.veterano_email || null,
+      anoNascimento: row.veterano_ano_nascimento,
+      anoEntrada: row.veterano_ano_entrada,
+      interesses: row.veterano_interesses,
+      genero: row.veterano_genero,
+      tipoUsuario: row.veterano_tipo,
+      curso: row.veterano_curso || null
+    };
+
+    return {
+      match: {
+        id: parseInt(row.match_id),
+        score: row.score ? parseFloat(row.score) : null,
+        status: row.status,
+        dataMatch: row.data_match
+      },
+      solicitante,
+      matchado
+    };
+  } catch (error) {
+    console.error('[MATCH] Erro ao buscar match do usuário:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   gerarMatches,
   ensureScoreColumn,
   getAllUsers,
   getMatches,
-  countMatches
+  countMatches,
+  getUserMatch
 };
 
