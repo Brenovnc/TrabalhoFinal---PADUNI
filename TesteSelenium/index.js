@@ -1,31 +1,39 @@
-const { Builder, By, until } = require('selenium-webdriver');
+const { runRfc01Suite } = require('./tests/rfc01');
 
-async function exemploTeste() {
-  // Configurar o driver (ajuste conforme necessário)
-  let driver = await new Builder().forBrowser('chrome').build();
-  
-  try {
-    console.log('Iniciando teste...');
-    
-    // Exemplo de teste
-    await driver.get('http://localhost:3000');
-    
-    // Aguardar elemento
-    await driver.wait(until.elementLocated(By.tagName('body')), 5000);
-    
-    console.log('Teste concluído com sucesso!');
-    
-  } catch (error) {
-    console.error('Erro no teste:', error);
-  } finally {
-    await driver.quit();
-  }
+async function main() {
+	console.log('Iniciando suíte de testes: RFC01 - Manter Usuário');
+	const results = await runRfc01Suite();
+
+	console.log('\nResumo RFC01');
+	console.log('============');
+	let passed = 0;
+	let failed = 0;
+	let skipped = 0;
+	results.forEach(r => {
+		const status = r.skipped ? 'SKIPPED' : (r.ok ? 'OK' : 'FAIL');
+		if (r.skipped) skipped++;
+		else if (r.ok) passed++;
+		else failed++;
+		console.log(`- ${r.id}: ${status}${r.message ? ` - ${r.message}` : ''}`);
+	});
+
+	console.log('\nTotais:');
+	console.log(`- Passou: ${passed}`);
+	console.log(`- Falhou: ${failed}`);
+	console.log(`- Ignorado: ${skipped}`);
+
+	// Exit with non-zero on failures
+	if (failed > 0) {
+		process.exitCode = 1;
+	}
 }
 
-// Executar apenas se chamado diretamente
 if (require.main === module) {
-  exemploTeste();
+	main().catch(err => {
+		console.error('Erro inesperado na suíte:', err);
+		process.exit(1);
+	});
 }
 
-module.exports = { exemploTeste };
+module.exports = { main };
 

@@ -4,7 +4,8 @@
   "description": "Testes automatizados com Selenium",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "node index.js",
+    "ui": "node ui/server.js"
   },
   "keywords": [
     "selenium",
@@ -14,7 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "selenium-webdriver": "^4.10.0"
+    "express": "^4.19.2",
+    "selenium-webdriver": "^4.10.0",
+    "socket.io": "^4.7.5"
   }
 }
 

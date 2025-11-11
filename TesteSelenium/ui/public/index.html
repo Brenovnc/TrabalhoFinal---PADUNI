@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PADUNI - Test Runner</title>
+  <style>
+    body { 
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+      margin: 24px; 
+      background: #0b1320; 
+      color: #e8eef7; 
+    }
+    h1 { margin: 0 0 24px; font-size: 28px; }
+    h2 { margin: 0 0 16px; font-size: 20px; color: #cbd5e1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    button { 
+      background: #1f3a8a; 
+      border: 1px solid #3556c5; 
+      color: #fff; 
+      padding: 10px 12px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s;
+    }
+    button:hover { background: #2a46a3; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .panel { 
+      background: #121a2b; 
+      border: 1px solid #243355; 
+      border-radius: 10px; 
+      padding: 20px; 
+      margin-bottom: 16px;
+    }
+    .config-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .config-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .config-field label {
+      font-weight: 500;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    .config-field input,
+    .config-field select {
+      background: #0a0f1a;
+      border: 1px solid #1e2a48;
+      color: #e8eef7;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .config-field input:focus,
+    .config-field select:focus {
+      outline: none;
+      border-color: #3556c5;
+      box-shadow: 0 0 0 2px rgba(53, 86, 197, 0.2);
+    }
+    .config-field small {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: -4px;
+    }
+    .test-section {
+      margin-bottom: 24px;
+    }
+    .test-section:last-child {
+      margin-bottom: 0;
+    }
+    .log { 
+      white-space: pre-wrap; 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; 
+      background: #0a0f1a; 
+      border-radius: 8px; 
+      padding: 12px; 
+      height: 320px; 
+      overflow: auto; 
+      border: 1px solid #1e2a48; 
+    }
+    .badge { 
+      display: inline-block; 
+      padding: 4px 12px; 
+      border-radius: 999px; 
+      font-size: 12px; 
+      font-weight: 500;
+      border: 1px solid #243355; 
+    }
+    .ok { background: #0f5132; color: #d1fae5; border-color: #1e7d46; }
+    .fail { background: #842029; color: #fde2e1; border-color: #a73c47; }
+    .skip { background: #735103; color: #fff1c2; border-color: #9a7f24; }
+    .btn-ok { background: #14532d !important; border-color: #1e7d46 !important; }
+    .btn-fail { background: #5f1f25 !important; border-color: #a73c47 !important; }
+    .btn-skip { background: #5a4b17 !important; border-color: #9a7f24 !important; }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>PADUNI - Test Runner</h1>
+  
+  <!-- Painel de Configuração -->
+  <div class="panel">
+    <div class="config-panel">
+      <div class="config-field">
+        <label for="delayInput">Delay entre ações (ms)</label>
+        <input id="delayInput" type="number" min="0" value="500" />
+        <small>Tempo de espera entre cada ação do teste (em milissegundos)</small>
+      </div>
+      <div class="config-field" style="grid-column: 1 / -1;">
+        <label for="userSelect">Usuários para teste</label>
+        <select id="userSelect" multiple size="6"></select>
+        <small>Selecione um ou mais usuários. Para RFS01 (Cadastro), múltiplos usuários serão cadastrados sequencialmente. Para outros testes, o primeiro selecionado será usado.</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seção de Testes RFC01 -->
+  <div class="panel test-section">
+    <h2>Testes RFC01 - Manter Usuário</h2>
+    <div class="grid">
+      <button data-test="RFS01">RFS01 - Cadastrar Usuário</button>
+      <button data-test="RFS02">RFS02 - Fazer Login</button>
+      <button data-test="RFS03">RFS03 - Visualizar Perfil</button>
+      <button data-test="RFS04">RFS04 - Editar Perfil</button>
+      <button data-test="RFS05">RFS05 - Alterar Email/Senha (MFA)</button>
+      <button data-test="RFS06">RFS06 - Excluir Conta (MFA)</button>
+    </div>
+  </div>
+
+  <!-- Futuras seções de testes podem ser adicionadas aqui -->
+  <!-- Exemplo:
+  <div class="panel test-section">
+    <h2>Testes RFC02 - [Nome do Requisito]</h2>
+    <div class="grid">
+      <button data-test="RFS07">RFS07 - [Teste 1]</button>
+      <button data-test="RFS08">RFS08 - [Teste 2]</button>
+    </div>
+  </div>
+  -->
+
+  <!-- Painel de Logs -->
+  <div class="panel">
+    <div class="status-bar">
+      <div id="status"><span class="badge">Aguardando execução...</span></div>
+      <button id="btn-stop" title="Parar teste atual">Parar teste atual</button>
+    </div>
+    <h3 style="margin-top: 12px; margin-bottom: 12px; font-size: 16px;">Logs em tempo real</h3>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+
+    function setStatus(text, cls) {
+      statusEl.innerHTML = `<span class="badge ${cls||''}">${text}</span>`;
+    }
+
+    function appendLog(line) {
+      const ts = new Date().toLocaleTimeString();
+      logEl.textContent += `[${ts}] ${line}\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    async function fetchUsers() {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      const sel = document.getElementById('userSelect');
+      sel.innerHTML = '';
+      const makeOpt = (u, groupLabel) => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = `${groupLabel}: ${u.label}`;
+        sel.appendChild(opt);
+      };
+      (data.users.calouros || []).forEach(u => makeOpt(u, 'Calouro'));
+      (data.users.veteranos || []).forEach(u => makeOpt(u, 'Veterano'));
+      if (!document.getElementById('delayInput').value) {
+        document.getElementById('delayInput').placeholder = String(data.defaultStepDelayMs || 1000);
+      }
+    }
+
+    function getSelectedUsers() {
+      const sel = document.getElementById('userSelect');
+      return Array.from(sel.selectedOptions).map(o => o.value);
+    }
+
+    function getStepDelay() {
+      const raw = document.getElementById('delayInput').value;
+      const v = Number(raw);
+      if (Number.isFinite(v) && v >= 0) return v;
+      return undefined;
+    }
+
+    async function run(id) {
+      appendLog(`Iniciando ${id}...`);
+      setStatus(`Executando ${id}...`, '');
+      const btn = document.querySelector(`button[data-test="${id}"]`);
+      if (btn) btn.classList.remove('btn-ok','btn-fail','btn-skip');
+      const payload = {
+        suite: 'RFC01', // Sempre RFC01 por enquanto
+        stepDelayMs: getStepDelay(),
+        userIds: getSelectedUsers()
+      };
+      const resp = await fetch(`/api/run/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const { room } = await resp.json();
+      const socket = io();
+      socket.on('connect', () => {
+        socket.emit('join', room);
+      });
+      socket.on('start', (data) => {
+        appendLog(`Início do teste: ${data.id}`);
+      });
+      socket.on('log', (msg) => {
+        appendLog(msg);
+      });
+      socket.on('end', (result) => {
+        const status = result.skipped ? 'IGNORADO' : (result.ok ? 'APROVADO' : 'REPROVADO');
+        const cls = result.skipped ? 'skip' : (result.ok ? 'ok' : 'fail');
+        setStatus(`${result.id} - ${status}${result.message ? ' - ' + result.message : ''}`, cls);
+        appendLog(`Fim do teste: ${result.id} -> ${status}${result.message ? ' - ' + result.message : ''}`);
+        if (btn) {
+          btn.classList.remove('btn-ok','btn-fail','btn-skip');
+          btn.classList.add(result.skipped ? 'btn-skip' : (result.ok ? 'btn-ok' : 'btn-fail'));
+        }
+        socket.disconnect();
+      });
+    }
+
+    document.querySelectorAll('button[data-test]').forEach(btn => {
+      btn.addEventListener('click', () => run(btn.dataset.test));
+    });
+
+    document.getElementById('btn-stop').addEventListener('click', async () => {
+      try {
+        await fetch('/api/stop', { method: 'POST' });
+        setStatus('Cancelamento solicitado...', 'skip');
+        appendLog('Cancelamento solicitado pelo usuário.');
+      } catch (e) {
+        appendLog('Falha ao solicitar cancelamento.');
+      }
+    });
+
+    // Carregar usuários no início
+    fetchUsers().catch(() => appendLog('Falha ao carregar usuários da configuração.'));
+  </script>
+</body>
+</html>
