@@ -120,53 +120,62 @@ async function calculateCompatibilityScore(calouro, veterano) {
 }
 
 /**
- * Encontra o melhor match para cada calouro
- * Usa algoritmo de matching otimizado (Hungarian algorithm simplificado)
+ * Encontra o melhor match garantindo 1:1 (um veterano para um calouro)
+ * Usa algoritmo greedy otimizado: calcula todos os scores, ordena por similaridade
+ * e faz match dos pares com maior score, garantindo que cada veterano e calouro
+ * só sejam usados uma vez.
  * 
  * @param {Array} calouros - Lista de calouros disponíveis
  * @param {Array} veteranos - Lista de veteranos disponíveis
  * @returns {Promise<Array>} - Array de matches [{ calouro, veterano, score, details }]
  */
 async function findBestMatches(calouros, veteranos) {
-  const matches = [];
-  const usedVeteranos = new Set();
+  console.log('[MATCH AI] Calculando compatibilidade entre todos os pares...');
   
-  // Para cada calouro, encontra o melhor veterano disponível
+  // Calcula compatibilidade entre todos os pares possíveis
+  const allPairs = [];
+  
   for (const calouro of calouros) {
-    let bestMatch = null;
-    let bestScore = -1;
-    
     for (const veterano of veteranos) {
-      // Pula se o veterano já foi usado
-      if (usedVeteranos.has(veterano.id)) {
-        continue;
-      }
-      
-      // Calcula compatibilidade (agora é async)
       const compatibility = await calculateCompatibilityScore(calouro, veterano);
       
-      // Se for compatível e tiver score melhor, atualiza o melhor match
-      if (compatibility.compatible && compatibility.score > bestScore) {
-        bestScore = compatibility.score;
-        bestMatch = {
+      if (compatibility.compatible) {
+        allPairs.push({
           calouro,
           veterano,
           score: compatibility.score,
           details: compatibility.details,
           ageDifference: compatibility.ageDifference
-        };
+        });
       }
-    }
-    
-    // Se encontrou um match, adiciona à lista e marca o veterano como usado
-    if (bestMatch) {
-      matches.push(bestMatch);
-      usedVeteranos.add(bestMatch.veterano.id);
     }
   }
   
-  // Ordena matches por score (maior primeiro)
-  matches.sort((a, b) => b.score - a.score);
+  console.log(`[MATCH AI] Total de pares compatíveis encontrados: ${allPairs.length}`);
+  
+  // Ordena todos os pares por score (maior primeiro)
+  allPairs.sort((a, b) => b.score - a.score);
+  
+  // Faz matching 1:1 garantindo que cada veterano e calouro só sejam usados uma vez
+  const matches = [];
+  const usedVeteranos = new Set();
+  const usedCalouros = new Set();
+  
+  for (const pair of allPairs) {
+    // Pula se o calouro ou veterano já foram usados
+    if (usedCalouros.has(pair.calouro.id) || usedVeteranos.has(pair.veterano.id)) {
+      continue;
+    }
+    
+    // Adiciona o match e marca ambos como usados
+    matches.push(pair);
+    usedCalouros.add(pair.calouro.id);
+    usedVeteranos.add(pair.veterano.id);
+    
+    console.log(`[MATCH AI] Match criado: ${pair.calouro.fullName || pair.calouro.nome} <-> ${pair.veterano.fullName || pair.veterano.nome} (score: ${pair.score.toFixed(2)})`);
+  }
+  
+  console.log(`[MATCH AI] Total de matches 1:1 criados: ${matches.length}`);
   
   return matches;
 }

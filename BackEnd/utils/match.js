@@ -127,8 +127,9 @@ async function getVeteranos() {
  * Gera matches baseados em similaridade de interesses
  * Regras:
  * - Cada calouro só pode ser associado a um único veterano (o de maior similaridade)
- * - Cada veterano pode estar associado a vários calouros
+ * - Cada veterano só pode estar associado a um único calouro (1:1)
  * - Compara apenas pares (calouro, veterano)
+ * - Match é feito baseado na maior similaridade global
  */
 async function gerarMatches() {
   console.log('[MATCH] ========================================');
@@ -167,9 +168,8 @@ async function gerarMatches() {
 
     console.log(`[MATCH] Encontrados ${calouros.length} calouros e ${veteranos.length} veteranos`);
 
-    // Dicionário para armazenar o melhor match de cada calouro
-    // Formato: { calouro_id: { veterano_id: X, similaridade: Y, calouro_nome: Z, veterano_nome: W } }
-    const bestMatches = {};
+    // Lista para armazenar todos os pares compatíveis
+    const allPairs = [];
     const MIN_SCORE = 0.5; // Score mínimo para considerar um match
     let comparisons = 0;
 
@@ -181,21 +181,15 @@ async function gerarMatches() {
           const score = await compareTexts(calouro.interesses, veterano.interesses);
           comparisons++;
 
-          // Se o score for >= MIN_SCORE, verifica se é o melhor match para este calouro
+          // Se o score for >= MIN_SCORE, adiciona à lista de pares possíveis
           if (score >= MIN_SCORE) {
-            const calouroId = calouro.id;
-            
-            // Se ainda não tem match para este calouro, ou se este score é maior
-            if (!bestMatches[calouroId] || score > bestMatches[calouroId].similaridade) {
-              bestMatches[calouroId] = {
-                veterano_id: veterano.id,
-                similaridade: score,
-                calouro_nome: calouro.nome,
-                veterano_nome: veterano.nome
-              };
-              
-              console.log(`[MATCH] Melhor match atualizado: ${calouro.nome} -> ${veterano.nome} (score: ${score.toFixed(4)})`);
-            }
+            allPairs.push({
+              calouro_id: calouro.id,
+              veterano_id: veterano.id,
+              similaridade: score,
+              calouro_nome: calouro.nome,
+              veterano_nome: veterano.nome
+            });
           }
         } catch (error) {
           console.error(`[MATCH] Erro ao comparar ${calouro.nome} e ${veterano.nome}:`, error.message);
@@ -205,9 +199,9 @@ async function gerarMatches() {
     }
 
     console.log(`[MATCH] Total de comparações realizadas: ${comparisons}`);
-    console.log(`[MATCH] Matches encontrados (score >= ${MIN_SCORE}): ${Object.keys(bestMatches).length}`);
+    console.log(`[MATCH] Pares compatíveis encontrados (score >= ${MIN_SCORE}): ${allPairs.length}`);
 
-    if (Object.keys(bestMatches).length === 0) {
+    if (allPairs.length === 0) {
       console.log('[MATCH] Nenhum match encontrado com score suficiente');
       return {
         success: true,
@@ -217,6 +211,36 @@ async function gerarMatches() {
         comparisons: comparisons
       };
     }
+
+    // Ordena todos os pares por similaridade (maior primeiro)
+    allPairs.sort((a, b) => b.similaridade - a.similaridade);
+
+    // Faz matching 1:1 garantindo que cada veterano e calouro só sejam usados uma vez
+    const bestMatches = {};
+    const usedVeteranos = new Set();
+    const usedCalouros = new Set();
+
+    for (const pair of allPairs) {
+      // Pula se o calouro ou veterano já foram usados
+      if (usedCalouros.has(pair.calouro_id) || usedVeteranos.has(pair.veterano_id)) {
+        continue;
+      }
+
+      // Adiciona o match e marca ambos como usados
+      bestMatches[pair.calouro_id] = {
+        veterano_id: pair.veterano_id,
+        similaridade: pair.similaridade,
+        calouro_nome: pair.calouro_nome,
+        veterano_nome: pair.veterano_nome
+      };
+      
+      usedCalouros.add(pair.calouro_id);
+      usedVeteranos.add(pair.veterano_id);
+      
+      console.log(`[MATCH] Match 1:1 criado: ${pair.calouro_nome} <-> ${pair.veterano_nome} (score: ${pair.similaridade.toFixed(4)})`);
+    }
+
+    console.log(`[MATCH] Matches 1:1 criados: ${Object.keys(bestMatches).length}`);
 
     // Converte o dicionário em lista de matches para salvar
     const matchesToSave = Object.entries(bestMatches).map(([calouroId, match]) => ({
@@ -239,15 +263,37 @@ async function gerarMatches() {
       for (const match of matchesToSave) {
         try {
           // Verifica se já existe um match para este calouro
-          const existingMatch = await client.query(`
+          const existingMatchCalouro = await client.query(`
             SELECT id, id_usuario_veterano, score
             FROM matches_table
             WHERE id_usuario_calouro = $1 AND status = 'ativo'
           `, [match.calouro_id]);
 
-          if (existingMatch.rows.length > 0) {
+          // Verifica se já existe um match para este veterano (1:1 - veterano só pode ter um calouro)
+          const existingMatchVeterano = await client.query(`
+            SELECT id, id_usuario_calouro, score
+            FROM matches_table
+            WHERE id_usuario_veterano = $1 AND status = 'ativo'
+          `, [match.veterano_id]);
+
+          // Se o veterano já está associado a outro calouro, desativa o match anterior
+          if (existingMatchVeterano.rows.length > 0) {
+            const existingVet = existingMatchVeterano.rows[0];
+            // Só desativa se for um calouro diferente
+            if (parseInt(existingVet.id_usuario_calouro) !== match.calouro_id) {
+              await client.query(`
+                UPDATE matches_table
+                SET status = 'desativado',
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id = $1
+              `, [existingVet.id]);
+              console.log(`[MATCH] Match anterior do veterano desativado para garantir 1:1`);
+            }
+          }
+
+          if (existingMatchCalouro.rows.length > 0) {
             // Já existe um match para este calouro
-            const existing = existingMatch.rows[0];
+            const existing = existingMatchCalouro.rows[0];
             
             // Se é o mesmo veterano, apenas atualiza o score
             if (parseInt(existing.id_usuario_veterano) === match.veterano_id) {

@@ -51,7 +51,7 @@ async function getCalourosDisponiveis() {
 
 /**
  * Busca veteranos disponíveis para apadrinhamento (tipo 'veterano')
- * que não possuem match ativo ou que podem ter múltiplos apadrinhados
+ * que não possuem match ativo (1:1 - cada veterano só pode ter um calouro)
  */
 async function getVeteranosDisponiveis() {
   try {
@@ -64,16 +64,16 @@ async function getVeteranosDisponiveis() {
         u.genero,
         u.interesses,
         c.nome as curso_nome,
-        u.ano_entrada_unifei,
-        COUNT(m.id) as matches_ativos
+        u.ano_entrada_unifei
       FROM usuarios_table u
       LEFT JOIN cursos_table c ON u.curso_id = c.id
-      LEFT JOIN matches_table m ON u.id = m.id_usuario_veterano 
-        AND m.status = 'ativo'
       WHERE u.tipo_usuario = 'veterano'
-      GROUP BY u.id, u.nome, u.email, u.ano_nascimento, u.genero, 
-               u.interesses, c.nome, u.ano_entrada_unifei
-      HAVING COUNT(m.id) < 3  -- Limite de 3 apadrinhados por veterano
+        AND u.id NOT IN (
+          SELECT DISTINCT id_usuario_veterano
+          FROM matches_table
+          WHERE status = 'ativo'
+            AND id_usuario_veterano IS NOT NULL
+        )
       ORDER BY u.criado_em ASC
     `);
     
@@ -87,7 +87,7 @@ async function getVeteranosDisponiveis() {
       course: row.curso_nome,
       interests: row.interesses,
       yearOfEntry: row.ano_entrada_unifei.toString(),
-      activeMatches: parseInt(row.matches_ativos)
+      activeMatches: 0
     }));
   } catch (error) {
     console.error('Error fetching available veteranos:', error);
@@ -142,6 +142,7 @@ async function updateUserMatchStatus(userId, status) {
 
 /**
  * Cria múltiplos matches em uma transação
+ * Garante regra 1:1 - cada veterano e calouro só pode ter um match ativo
  */
 async function createMatchesBatch(matches) {
   const client = await getClient();
@@ -152,19 +153,66 @@ async function createMatchesBatch(matches) {
     const createdMatches = [];
     
     for (const match of matches) {
-      // Cria o match
+      const veteranoId = parseInt(match.veterano.id);
+      const calouroId = parseInt(match.calouro.id);
+      
+      // Verifica se o veterano já está associado a outro calouro (1:1)
+      const existingMatchVeterano = await client.query(`
+        SELECT id, id_usuario_calouro
+        FROM matches_table
+        WHERE id_usuario_veterano = $1 AND status = 'ativo'
+      `, [veteranoId]);
+      
+      // Se o veterano já está associado a outro calouro, desativa o match anterior
+      if (existingMatchVeterano.rows.length > 0) {
+        const existingVet = existingMatchVeterano.rows[0];
+        if (parseInt(existingVet.id_usuario_calouro) !== calouroId) {
+          await client.query(`
+            UPDATE matches_table
+            SET status = 'desativado',
+                atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = $1
+          `, [existingVet.id]);
+          console.log(`[MATCHES] Match anterior do veterano ${veteranoId} desativado para garantir 1:1`);
+        }
+      }
+      
+      // Verifica se o calouro já está associado a outro veterano
+      const existingMatchCalouro = await client.query(`
+        SELECT id, id_usuario_veterano
+        FROM matches_table
+        WHERE id_usuario_calouro = $1 AND status = 'ativo'
+      `, [calouroId]);
+      
+      // Se o calouro já está associado a outro veterano, desativa o match anterior
+      if (existingMatchCalouro.rows.length > 0) {
+        const existingCal = existingMatchCalouro.rows[0];
+        if (parseInt(existingCal.id_usuario_veterano) !== veteranoId) {
+          await client.query(`
+            UPDATE matches_table
+            SET status = 'desativado',
+                atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = $1
+          `, [existingCal.id]);
+          console.log(`[MATCHES] Match anterior do calouro ${calouroId} desativado para garantir 1:1`);
+        }
+      }
+      
+      // Cria o match (ou atualiza se já existir)
       const matchResult = await client.query(`
         INSERT INTO matches_table (
           id_usuario_veterano,
           id_usuario_calouro,
-          status
-        ) VALUES ($1, $2, 'ativo')
+          status,
+          score
+        ) VALUES ($1, $2, 'ativo', $3)
         ON CONFLICT (id_usuario_veterano, id_usuario_calouro) 
         DO UPDATE SET 
           status = 'ativo',
+          score = $3,
           atualizado_em = CURRENT_TIMESTAMP
         RETURNING *
-      `, [parseInt(match.veterano.id), parseInt(match.calouro.id)]);
+      `, [veteranoId, calouroId, match.score || null]);
       
       // Atualiza status do calouro para 'pareado'
       await client.query(`
@@ -172,7 +220,7 @@ async function createMatchesBatch(matches) {
         SET status_match = 'pareado',
             atualizado_em = CURRENT_TIMESTAMP
         WHERE id = $1
-      `, [parseInt(match.calouro.id)]);
+      `, [calouroId]);
       
       createdMatches.push({
         match: matchResult.rows[0],
