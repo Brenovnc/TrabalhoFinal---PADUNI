@@ -304,6 +304,15 @@ async function gerarMatches() {
                     atualizado_em = CURRENT_TIMESTAMP
                 WHERE id = $2
               `, [match.score, existing.id]);
+              
+              // Atualiza status do calouro e veterano para 'pareado'
+              await client.query(`
+                UPDATE usuarios_table
+                SET status_match = 'pareado',
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id IN ($1, $2)
+              `, [match.calouro_id, match.veterano_id]);
+              
               updatedCount++;
               console.log(`[MATCH] Score atualizado: ${match.calouro_nome} <-> ${match.veterano_nome} (score: ${match.score.toFixed(4)})`);
             } else {
@@ -315,6 +324,15 @@ async function gerarMatches() {
                     atualizado_em = CURRENT_TIMESTAMP
                 WHERE id = $3
               `, [match.veterano_id, match.score, existing.id]);
+              
+              // Atualiza status do calouro e veterano para 'pareado'
+              await client.query(`
+                UPDATE usuarios_table
+                SET status_match = 'pareado',
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id IN ($1, $2)
+              `, [match.calouro_id, match.veterano_id]);
+              
               updatedCount++;
               console.log(`[MATCH] Match atualizado: ${match.calouro_nome} agora está com ${match.veterano_nome} (score: ${match.score.toFixed(4)})`);
             }
@@ -329,6 +347,15 @@ async function gerarMatches() {
               )
               VALUES ($1, $2, 'ativo', $3)
             `, [match.veterano_id, match.calouro_id, match.score]);
+            
+            // Atualiza status do calouro e veterano para 'pareado'
+            await client.query(`
+              UPDATE usuarios_table
+              SET status_match = 'pareado',
+                  atualizado_em = CURRENT_TIMESTAMP
+              WHERE id IN ($1, $2)
+            `, [match.calouro_id, match.veterano_id]);
+            
             savedCount++;
             console.log(`[MATCH] Novo match criado: ${match.calouro_nome} <-> ${match.veterano_nome} (score: ${match.score.toFixed(4)})`);
           }

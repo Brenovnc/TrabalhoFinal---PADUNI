@@ -101,6 +101,9 @@ async function getVeteranosDisponiveis() {
  */
 async function createMatch(veteranoId, calouroId) {
   try {
+    const veteranoIdInt = parseInt(veteranoId);
+    const calouroIdInt = parseInt(calouroId);
+    
     const result = await query(`
       INSERT INTO matches_table (
         id_usuario_veterano,
@@ -112,7 +115,15 @@ async function createMatch(veteranoId, calouroId) {
         status = 'ativo',
         atualizado_em = CURRENT_TIMESTAMP
       RETURNING *
-    `, [parseInt(veteranoId), parseInt(calouroId)]);
+    `, [veteranoIdInt, calouroIdInt]);
+    
+    // Atualiza status do calouro e veterano para 'pareado'
+    await query(`
+      UPDATE usuarios_table
+      SET status_match = 'pareado',
+          atualizado_em = CURRENT_TIMESTAMP
+      WHERE id IN ($1, $2)
+    `, [veteranoIdInt, calouroIdInt]);
     
     return result.rows[0];
   } catch (error) {
@@ -222,6 +233,14 @@ async function createMatchesBatch(matches) {
             atualizado_em = CURRENT_TIMESTAMP
         WHERE id = $1
       `, [calouroId]);
+      
+      // Atualiza status do veterano para 'pareado'
+      await client.query(`
+        UPDATE usuarios_table
+        SET status_match = 'pareado',
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [veteranoId]);
       
       createdMatches.push({
         match: matchResult.rows[0],

@@ -5,6 +5,7 @@ const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = 
 const { processAutomaticMatch } = require('../utils/matchAI');
 const { addLogEntry } = require('../utils/criticalActionsLog');
 const { getMatches, countMatches, gerarMatches, getUserMatch } = require('../utils/match');
+const { requestMatchCancellation } = require('../utils/matchCancellationService');
 // Nota: Notificações de match são enviadas automaticamente pelo createMatchesBatch
 
 /**
@@ -295,6 +296,86 @@ router.get('/status', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro ao buscar status do match'
+    });
+  }
+});
+
+/**
+ * POST /api/matches/:matchId/cancel
+ * Permite solicitar o desfazimento de um match
+ * 
+ * Body:
+ * {
+ *   "justificativa": "Texto da justificativa (obrigatório)"
+ * }
+ */
+router.post('/:matchId/cancel', async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { justificativa } = req.body;
+
+    // Valida parâmetros
+    if (!matchId || isNaN(parseInt(matchId))) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do match inválido'
+      });
+    }
+
+    if (!justificativa || typeof justificativa !== 'string' || justificativa.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Justificativa é obrigatória'
+      });
+    }
+
+    // Solicita o desfazimento do match
+    const result = await requestMatchCancellation({
+      matchId: parseInt(matchId),
+      justificativa: justificativa.trim(),
+      adminId: null,
+      adminEmail: 'system@paduni.com',
+      adminName: 'Sistema'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Solicitação de anulação registrada com sucesso.',
+      data: {
+        matchId: result.matchId
+      }
+    });
+
+  } catch (error) {
+    console.error('Error requesting match cancellation:', error);
+    
+    // Retorna erro específico conforme o tipo
+    if (error.message === 'Match não encontrado') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('não está ativo')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message === 'Justificativa é obrigatória') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    // Erro genérico
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao solicitar anulação do match',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
