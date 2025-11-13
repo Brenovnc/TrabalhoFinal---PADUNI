@@ -33,7 +33,16 @@ DB_NAME=paduni
 DB_USER=postgres
 DB_PASSWORD=sua_senha_aqui
 PORT=3001
+
+# Agendamento de Matches Automáticos (opcional)
+MATCH_SCHEDULE=0 2 * * *
+RUN_MATCH_ON_STARTUP=false
+
+# API Hugging Face (para comparação de interesses)
+HUGGINGFACE_API_KEY=sua_chave_aqui
 ```
+
+**Nota:** Para mais detalhes sobre configuração do agendamento, consulte `AGENDAMENTO_MATCHES.md`
 
 ## Executar
 
@@ -61,6 +70,11 @@ O servidor estará disponível em `http://localhost:3001`
 - `PUT /api/users/change-credentials` - Alterar email ou senha com MFA
 - `POST /api/users/request-deletion-code` - Solicitar código de confirmação para exclusão
 - `DELETE /api/users/account` - Excluir conta do usuário autenticado
+- `POST /api/matches/generate` - Gerar matches baseados em similaridade de interesses
+- `GET /api/matches/list` - Listar matches de similaridade
+- `POST /api/matches/automatic` - Executar match automático padrinho-apadrinhado
+- `GET /api/matches/status` - Status do match
+- `POST /api/compare-texts` - Comparar similaridade entre dois textos
 
 ## Dependências
 
