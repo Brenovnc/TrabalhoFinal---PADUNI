@@ -4,6 +4,7 @@
  */
 const { query, getClient } = require('./db');
 const { compareTexts } = require('./textSimilarity');
+const { notifyMatchCreated } = require('./matchNotificationService');
 
 /**
  * Verifica se a coluna score existe na matches_table, se não, adiciona
@@ -351,6 +352,43 @@ async function gerarMatches() {
       console.log(`[MATCH] Matches ignorados (já existentes ou score menor): ${skippedCount}`);
     }
     console.log('[MATCH] Matches salvos com sucesso.');
+    
+    // Envia notificações automáticas para os matches criados
+    // Busca os emails dos usuários e envia notificações
+    if (matchesToSave.length > 0) {
+      console.log('[MATCH] Iniciando envio de notificações de match...');
+      
+      // Busca emails dos usuários e envia notificações de forma assíncrona
+      for (const match of matchesToSave) {
+        setImmediate(async () => {
+          try {
+            // Busca emails dos usuários
+            const calouroResult = await query(`
+              SELECT email FROM usuarios_table WHERE id = $1
+            `, [match.calouro_id]);
+            
+            const veteranoResult = await query(`
+              SELECT email FROM usuarios_table WHERE id = $1
+            `, [match.veterano_id]);
+            
+            if (calouroResult.rows.length > 0 && veteranoResult.rows.length > 0) {
+              await notifyMatchCreated({
+                calouroId: match.calouro_id.toString(),
+                calouroEmail: calouroResult.rows[0].email,
+                veteranoId: match.veterano_id.toString(),
+                veteranoEmail: veteranoResult.rows[0].email
+              });
+            } else {
+              console.warn(`[MATCH] Não foi possível encontrar emails para match ${match.calouro_id}-${match.veterano_id}`);
+            }
+          } catch (notificationError) {
+            console.error(`[MATCH] Erro ao enviar notificações de match ${match.calouro_id}-${match.veterano_id}:`, notificationError);
+            // Não interrompe o fluxo se a notificação falhar
+          }
+        });
+      }
+    }
+    
     console.log('[MATCH] ========================================');
 
     return {

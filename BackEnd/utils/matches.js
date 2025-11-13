@@ -2,6 +2,7 @@
  * Funções para gerenciar matches no banco de dados
  */
 const { query, getClient } = require('./db');
+const { notifyMatchCreated } = require('./matchNotificationService');
 
 /**
  * Busca calouros que precisam de padrinho (status 'pendente' e tipo 'calouro')
@@ -231,6 +232,26 @@ async function createMatchesBatch(matches) {
     }
     
     await client.query('COMMIT');
+    
+    // Envia notificações automáticas para todos os matches criados
+    // Usa setTimeout para garantir execução assíncrona e não bloquear o commit
+    // Executa em até 1 minuto após o registro (executa imediatamente mas de forma não-bloqueante)
+    for (const createdMatch of createdMatches) {
+      // Executa de forma assíncrona para não bloquear
+      setImmediate(async () => {
+        try {
+          await notifyMatchCreated({
+            calouroId: createdMatch.calouro.id,
+            calouroEmail: createdMatch.calouro.email,
+            veteranoId: createdMatch.veterano.id,
+            veteranoEmail: createdMatch.veterano.email
+          });
+        } catch (notificationError) {
+          console.error('[MATCHES] Erro ao enviar notificações de match:', notificationError);
+          // Não interrompe o fluxo se a notificação falhar
+        }
+      });
+    }
     
     return createdMatches;
   } catch (error) {

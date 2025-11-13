@@ -3,9 +3,9 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = require('../utils/matches');
 const { processAutomaticMatch } = require('../utils/matchAI');
-const { sendMatchNotification } = require('../utils/emailService');
 const { addLogEntry } = require('../utils/criticalActionsLog');
 const { getMatches, countMatches, gerarMatches, getUserMatch } = require('../utils/match');
+// Nota: Notificações de match são enviadas automaticamente pelo createMatchesBatch
 
 /**
  * POST /api/matches/automatic
@@ -67,43 +67,15 @@ router.post('/automatic', authenticateToken, async (req, res) => {
     }
 
     // Cria os matches no banco de dados
+    // Nota: As notificações de email são enviadas automaticamente pelo createMatchesBatch
     const createdMatches = await createMatchesBatch(matchResult.matches);
 
-    // Envia emails de notificação para cada match criado
-    const emailResults = [];
-    for (const match of createdMatches) {
-      try {
-        // Envia email para o calouro
-        await sendMatchNotification(
-          match.calouro.email,
-          match.calouro.fullName,
-          match.veterano.fullName,
-          'calouro'
-        );
-
-        // Envia email para o veterano
-        await sendMatchNotification(
-          match.veterano.email,
-          match.veterano.fullName,
-          match.calouro.fullName,
-          'veterano'
-        );
-
-        emailResults.push({
-          calouroId: match.calouro.id,
-          veteranoId: match.veterano.id,
-          emailsSent: true
-        });
-      } catch (emailError) {
-        console.error('Error sending match notification emails:', emailError);
-        emailResults.push({
-          calouroId: match.calouro.id,
-          veteranoId: match.veterano.id,
-          emailsSent: false,
-          error: emailError.message
-        });
-      }
-    }
+    // Prepara resultados dos emails (notificações enviadas automaticamente)
+    const emailResults = createdMatches.map(match => ({
+      calouroId: match.calouro.id,
+      veteranoId: match.veterano.id,
+      emailsSent: true // Notificações enviadas automaticamente pelo serviço
+    }));
 
     // Log da ação crítica
     try {

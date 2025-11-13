@@ -5,9 +5,9 @@
 const cron = require('node-cron');
 const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = require('./matches');
 const { processAutomaticMatch } = require('./matchAI');
-const { sendMatchNotification } = require('./emailService');
 const { addLogEntry } = require('./criticalActionsLog');
 const { gerarMatches } = require('./match');
+// Nota: Notificações de match são enviadas automaticamente pelo createMatchesBatch
 
 let matchJob = null;
 
@@ -66,40 +66,11 @@ async function matchAutomatico() {
     }
 
     // Cria os matches no banco de dados
+    // Nota: As notificações de email são enviadas automaticamente pelo createMatchesBatch
     const createdMatches = await createMatchesBatch(matchResult.matches);
 
     console.log(`[SCHEDULER] ✅ ${createdMatches.length} matches criados com sucesso`);
-
-    // Envia emails de notificação para cada match criado
-    let emailsSent = 0;
-    let emailsFailed = 0;
-
-    for (const match of createdMatches) {
-      try {
-        // Envia email para o calouro
-        await sendMatchNotification(
-          match.calouro.email,
-          match.calouro.fullName,
-          match.veterano.fullName,
-          'calouro'
-        );
-
-        // Envia email para o veterano
-        await sendMatchNotification(
-          match.veterano.email,
-          match.veterano.fullName,
-          match.calouro.fullName,
-          'veterano'
-        );
-
-        emailsSent += 2;
-      } catch (emailError) {
-        console.error(`[SCHEDULER] Erro ao enviar emails de notificação:`, emailError);
-        emailsFailed += 2;
-      }
-    }
-
-    console.log(`[SCHEDULER] 📧 Emails enviados: ${emailsSent}, Falhas: ${emailsFailed}`);
+    console.log(`[SCHEDULER] 📧 Notificações de email serão enviadas automaticamente para os usuários`);
 
     // Log da ação
     try {
@@ -113,8 +84,7 @@ async function matchAutomatico() {
           totalVeteranos: veteranos.length,
           matchesCreated: createdMatches.length,
           averageScore: matchResult.statistics.averageScore,
-          emailsSent,
-          emailsFailed
+          notifications: 'Enviadas automaticamente pelo serviço de notificação'
         }
       });
     } catch (logError) {
@@ -129,8 +99,7 @@ async function matchAutomatico() {
       message: `Match automático executado com sucesso. ${createdMatches.length} matches criados.`,
       matchesCreated: createdMatches.length,
       statistics: matchResult.statistics,
-      emailsSent,
-      emailsFailed
+      notifications: 'Enviadas automaticamente pelo serviço de notificação'
     };
   } catch (error) {
     console.error('[SCHEDULER] ❌ Erro ao executar match automático:', error);
