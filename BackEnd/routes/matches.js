@@ -4,7 +4,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = require('../utils/matches');
 const { processAutomaticMatch } = require('../utils/matchAI');
 const { addLogEntry } = require('../utils/criticalActionsLog');
-const { getMatches, countMatches, gerarMatches, getUserMatch } = require('../utils/match');
+const { getMatches, countMatches, gerarMatches, getUserMatch, deleteMatch } = require('../utils/match');
 const { requestMatchCancellation } = require('../utils/matchCancellationService');
 // Nota: Notificações de match são enviadas automaticamente pelo createMatchesBatch
 
@@ -375,6 +375,63 @@ router.post('/:matchId/cancel', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro ao solicitar anulação do match',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
+ * DELETE /api/matches/:id
+ * Deleta um match por ID
+ */
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Valida parâmetros
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do match inválido'
+      });
+    }
+
+    // Deleta o match
+    const deleted = await deleteMatch(parseInt(id));
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match não encontrado'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Match excluído com sucesso'
+    });
+  } catch (error) {
+    console.error('Error deleting match:', error);
+    
+    // Retorna erro específico conforme o tipo
+    if (error.message === 'Match não encontrado') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message === 'ID do match inválido') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    // Erro genérico
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao excluir match',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

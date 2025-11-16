@@ -675,12 +675,49 @@ async function getUserMatch(userId) {
   }
 }
 
+/**
+ * Deleta um match por ID
+ * @param {number} matchId - ID do match a ser deletado
+ * @returns {Promise<boolean>} - true se deletado com sucesso, false caso contrário
+ */
+async function deleteMatch(matchId) {
+  try {
+    if (!matchId || isNaN(parseInt(matchId))) {
+      throw new Error('ID do match inválido');
+    }
+
+    const matchIdNum = parseInt(matchId);
+
+    // Verifica se o match existe
+    const checkResult = await query(
+      'SELECT id FROM matches_table WHERE id = $1',
+      [matchIdNum]
+    );
+
+    if (checkResult.rows.length === 0) {
+      throw new Error('Match não encontrado');
+    }
+
+    // Deleta o match
+    const deleteResult = await query(
+      'DELETE FROM matches_table WHERE id = $1 RETURNING id',
+      [matchIdNum]
+    );
+
+    return deleteResult.rowCount > 0;
+  } catch (error) {
+    console.error('[MATCH] Erro ao deletar match:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   gerarMatches,
   ensureScoreColumn,
   getAllUsers,
   getMatches,
   countMatches,
-  getUserMatch
+  getUserMatch,
+  deleteMatch
 };
 
