@@ -4,13 +4,14 @@ import './Home.css';
 
 const Home = () => {
   const [user, setUser] = useState(null);
-  
+
   // Estados para funcionalidades de matches
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesList, setMatchesList] = useState([]);
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [matchData, setMatchData] = useState(null);
   const [showMatchesTable, setShowMatchesTable] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const userData = getUser();
@@ -229,6 +230,45 @@ const Home = () => {
     setMatchData(null);
   };
 
+  /**
+   * Função para excluir um match
+   * Chama DELETE /api/matches/{id} e atualiza a tabela automaticamente
+   * @param {number} matchId - ID do match a ser excluído
+   */
+  const handleDeleteMatch = async (matchId) => {
+    // Confirmação antes de excluir
+    if (!window.confirm(`Tem certeza que deseja excluir o match #${matchId}? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    setDeletingId(matchId);
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+      
+      const response = await fetch(`${apiUrl}/matches/${matchId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao excluir match');
+      }
+
+      // Remove o match da lista local sem recarregar a página
+      setMatchesList(prevMatches => prevMatches.filter(match => match.id !== matchId));
+      
+      alert('Match excluído com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir match:', error);
+      alert(`Erro ao excluir match: ${error.message}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (!user) {
     return <div>Carregando...</div>;
   }
@@ -304,6 +344,7 @@ const Home = () => {
                       <th>Score</th>
                       <th>Status</th>
                       <th>Data</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -324,6 +365,15 @@ const Home = () => {
                               })
                             : 'N/A'}
                         </td>
+                        <td>
+                          <button
+                            onClick={() => handleDeleteMatch(match.id)}
+                            className="delete-match-button"
+                            disabled={deletingId === match.id}
+                          >
+                            {deletingId === match.id ? 'Excluindo...' : 'Excluir'}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -342,6 +392,12 @@ const Home = () => {
         <div className="home-actions">
           <button onClick={navigateToProfile} className="profile-button">
             Ver Meu Perfil
+          </button>
+          <button 
+            onClick={() => window.location.href = '/matches'} 
+            className="matches-table-button"
+          >
+            Gerenciar Matches
           </button>
           <button onClick={handleLogout} className="logout-button">
             Sair
