@@ -179,6 +179,26 @@
   text-align: center;
 }
 
+/* Estilos para Justificativa */
+.justificativa-text {
+  display: block;
+  max-width: 300px;
+  padding: 8px;
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.justificativa-empty {
+  color: #999;
+  font-style: italic;
+}
+
 .no-matches {
   background: white;
   border-radius: 16px;

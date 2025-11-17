@@ -36,6 +36,7 @@ const MatchesTable = () => {
       const data = await response.json();
       
       if (data.success && data.matches) {
+        // Usa justificativa_anulacao do backend diretamente
         setMatches(data.matches);
       } else {
         setMatches([]);
@@ -85,10 +86,11 @@ const MatchesTable = () => {
       
       if (data.success) {
         // Atualiza o status do match na lista local sem recarregar a página
+        // Inclui a justificativa_anulacao no match cancelado
         setMatches(prevMatches => 
           prevMatches.map(match => 
             match.id === matchId 
-              ? { ...match, status: 'cancelado' }
+              ? { ...match, status: 'cancelado', justificativa_anulacao: justificativa.trim() }
               : match
           )
         );
@@ -248,6 +250,7 @@ const MatchesTable = () => {
                 <th>Usuário B (Calouro)</th>
                 <th>Data de Criação</th>
                 <th>Status</th>
+                <th>Justificativa</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -262,6 +265,11 @@ const MatchesTable = () => {
                     <span className={`status-badge ${getStatusClass(match.status || 'ativo')}`}>
                       {getStatusText(match.status || 'ativo')}
                     </span>
+                  </td>
+                  <td>
+                    {match.justificativa_anulacao 
+                      ? <span className="justificativa-text">{match.justificativa_anulacao}</span>
+                      : <span className="justificativa-empty">-</span>}
                   </td>
                   <td>
                     <button

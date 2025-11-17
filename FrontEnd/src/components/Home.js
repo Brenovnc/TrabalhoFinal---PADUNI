@@ -212,21 +212,21 @@ const Home = () => {
       const data = await response.json();
       
       if (data.success && data.matches) {
-        // Preserva as justificativas dos matches cancelados que já estavam na lista
+        // Preserva justificativas_anulacao dos matches cancelados que já estavam na lista
         setMatchesList(prevMatches => {
           const matchesMap = new Map();
-          // Primeiro, adiciona os matches antigos com justificativa
+          // Primeiro, adiciona os matches antigos com justificativa_anulacao
           prevMatches.forEach(match => {
-            if (match.justificativa) {
+            if (match.justificativa_anulacao) {
               matchesMap.set(match.id, match);
             }
           });
           // Depois, mescla com os novos matches do backend
           data.matches.forEach(match => {
             const existingMatch = matchesMap.get(match.id);
-            if (existingMatch && existingMatch.justificativa) {
-              // Preserva a justificativa se já existir
-              matchesMap.set(match.id, { ...match, justificativa: existingMatch.justificativa });
+            if (existingMatch && existingMatch.justificativa_anulacao) {
+              // Preserva a justificativa_anulacao se já existir
+              matchesMap.set(match.id, { ...match, justificativa_anulacao: existingMatch.justificativa_anulacao });
             } else {
               matchesMap.set(match.id, match);
             }
@@ -321,11 +321,11 @@ const Home = () => {
       
       if (data.success) {
         // Atualiza o status do match na lista local sem recarregar a página
-        // Inclui a justificativa no match cancelado
+        // Inclui a justificativa_anulacao no match cancelado
         setMatchesList(prevMatches => 
           prevMatches.map(match => 
             match.id === matchId 
-              ? { ...match, status: 'cancelado', justificativa: justificativa.trim() }
+              ? { ...match, status: 'cancelado', justificativa_anulacao: justificativa.trim() }
               : match
           )
         );
@@ -441,8 +441,8 @@ const Home = () => {
                             : 'N/A'}
                         </td>
                         <td>
-                          {match.status === 'cancelado' && match.justificativa 
-                            ? <span className="justificativa-text">{match.justificativa}</span>
+                          {match.justificativa_anulacao 
+                            ? <span className="justificativa-text">{match.justificativa_anulacao}</span>
                             : <span className="justificativa-empty">-</span>}
                         </td>
                         <td>
