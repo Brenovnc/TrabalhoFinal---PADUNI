@@ -11,7 +11,10 @@ const Home = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [matchData, setMatchData] = useState(null);
   const [showMatchesTable, setShowMatchesTable] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [justificativa, setJustificativa] = useState('');
 
   useEffect(() => {
     const userData = getUser();
@@ -209,7 +212,27 @@ const Home = () => {
       const data = await response.json();
       
       if (data.success && data.matches) {
-        setMatchesList(data.matches);
+        // Preserva as justificativas dos matches cancelados que já estavam na lista
+        setMatchesList(prevMatches => {
+          const matchesMap = new Map();
+          // Primeiro, adiciona os matches antigos com justificativa
+          prevMatches.forEach(match => {
+            if (match.justificativa) {
+              matchesMap.set(match.id, match);
+            }
+          });
+          // Depois, mescla com os novos matches do backend
+          data.matches.forEach(match => {
+            const existingMatch = matchesMap.get(match.id);
+            if (existingMatch && existingMatch.justificativa) {
+              // Preserva a justificativa se já existir
+              matchesMap.set(match.id, { ...match, justificativa: existingMatch.justificativa });
+            } else {
+              matchesMap.set(match.id, match);
+            }
+          });
+          return Array.from(matchesMap.values());
+        });
         setShowMatchesTable(true);
       } else {
         alert('Nenhum match encontrado.');
@@ -231,41 +254,92 @@ const Home = () => {
   };
 
   /**
-   * Função para excluir um match
-   * Chama DELETE /api/matches/{id} e atualiza a tabela automaticamente
-   * @param {number} matchId - ID do match a ser excluído
+   * Abre o modal de cancelamento para um match
+   * @param {Object} match - Objeto do match a ser cancelado
    */
-  const handleDeleteMatch = async (matchId) => {
-    // Confirmação antes de excluir
-    if (!window.confirm(`Tem certeza que deseja excluir o match #${matchId}? Esta ação não pode ser desfeita.`)) {
+  const handleCancelClick = (match) => {
+    if (match.status === 'cancelado') {
+      alert('Este match já está cancelado.');
+      return;
+    }
+    setSelectedMatch(match);
+    setShowCancelModal(true);
+  };
+
+  /**
+   * Fecha o modal de cancelamento
+   */
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedMatch(null);
+    setJustificativa('');
+  };
+
+  /**
+   * Confirma o cancelamento do match após validação
+   */
+  const handleConfirmCancel = () => {
+    if (selectedMatch && justificativa.trim()) {
+      handleCancelMatch(selectedMatch.id, justificativa);
+    } else {
+      alert('Por favor, informe uma justificativa.');
+    }
+  };
+
+  /**
+   * Função para cancelar um match
+   * Chama POST /api/matches/{id}/cancel e atualiza o status na tabela
+   * @param {number} matchId - ID do match a ser cancelado
+   * @param {string} justificativa - Justificativa para o cancelamento
+   */
+  const handleCancelMatch = async (matchId, justificativa) => {
+    if (!justificativa || justificativa.trim().length === 0) {
+      alert('Justificativa é obrigatória para cancelar um match.');
       return;
     }
 
-    setDeletingId(matchId);
+    setCancellingId(matchId);
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
       
-      const response = await fetch(`${apiUrl}/matches/${matchId}`, {
-        method: 'DELETE',
+      const response = await fetch(`${apiUrl}/matches/${matchId}/cancel`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          justificativa: justificativa.trim()
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao excluir match');
+        throw new Error(errorData.message || 'Erro ao cancelar match');
       }
 
-      // Remove o match da lista local sem recarregar a página
-      setMatchesList(prevMatches => prevMatches.filter(match => match.id !== matchId));
+      const data = await response.json();
       
-      alert('Match excluído com sucesso!');
+      if (data.success) {
+        // Atualiza o status do match na lista local sem recarregar a página
+        // Inclui a justificativa no match cancelado
+        setMatchesList(prevMatches => 
+          prevMatches.map(match => 
+            match.id === matchId 
+              ? { ...match, status: 'cancelado', justificativa: justificativa.trim() }
+              : match
+          )
+        );
+        
+        alert('Match cancelado com sucesso!');
+        setShowCancelModal(false);
+        setSelectedMatch(null);
+        setJustificativa('');
+      }
     } catch (error) {
-      console.error('Erro ao excluir match:', error);
-      alert(`Erro ao excluir match: ${error.message}`);
+      console.error('Erro ao cancelar match:', error);
+      alert(`Erro ao cancelar match: ${error.message}`);
     } finally {
-      setDeletingId(null);
+      setCancellingId(null);
     }
   };
 
@@ -344,6 +418,7 @@ const Home = () => {
                       <th>Score</th>
                       <th>Status</th>
                       <th>Data</th>
+                      <th>Justificativa</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
@@ -366,12 +441,17 @@ const Home = () => {
                             : 'N/A'}
                         </td>
                         <td>
+                          {match.status === 'cancelado' && match.justificativa 
+                            ? <span className="justificativa-text">{match.justificativa}</span>
+                            : <span className="justificativa-empty">-</span>}
+                        </td>
+                        <td>
                           <button
-                            onClick={() => handleDeleteMatch(match.id)}
-                            className="delete-match-button"
-                            disabled={deletingId === match.id}
+                            onClick={() => handleCancelClick(match)}
+                            className={`cancel-match-button ${match.status === 'cancelado' ? 'disabled' : ''}`}
+                            disabled={match.status === 'cancelado' || cancellingId === match.id}
                           >
-                            {deletingId === match.id ? 'Excluindo...' : 'Excluir'}
+                            {cancellingId === match.id ? 'Cancelando...' : 'Cancelar'}
                           </button>
                         </td>
                       </tr>
@@ -465,6 +545,64 @@ const Home = () => {
             <div className="modal-footer">
               <button className="modal-button" onClick={closeMatchModal}>
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Cancelamento */}
+      {showCancelModal && selectedMatch && (
+        <div className="modal-overlay" onClick={handleCloseCancelModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Cancelar Match</h2>
+              <button 
+                className="modal-close" 
+                onClick={handleCloseCancelModal}
+                disabled={cancellingId !== null}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-question">
+                Tem certeza que deseja cancelar o match <strong>#{selectedMatch.id}</strong>?
+              </p>
+              <p className="modal-info">
+                <strong>Veterano:</strong> {selectedMatch.user1?.nome || 'N/A'}<br />
+                <strong>Calouro:</strong> {selectedMatch.user2?.nome || 'N/A'}
+              </p>
+              <div className="form-group">
+                <label htmlFor="justificativa" className="form-label">
+                  Motivo do Cancelamento <span className="required">*</span>
+                </label>
+                <textarea
+                  id="justificativa"
+                  className="form-textarea"
+                  rows="4"
+                  placeholder="Digite o motivo do cancelamento..."
+                  value={justificativa}
+                  onChange={(e) => setJustificativa(e.target.value)}
+                  required
+                  disabled={cancellingId !== null}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-button-cancel"
+                onClick={handleCloseCancelModal}
+                disabled={cancellingId !== null}
+              >
+                Voltar
+              </button>
+              <button
+                className="modal-button-confirm"
+                onClick={handleConfirmCancel}
+                disabled={!justificativa.trim() || cancellingId !== null}
+              >
+                {cancellingId === selectedMatch.id ? 'Cancelando...' : 'Confirmar Cancelamento'}
               </button>
             </div>
           </div>
