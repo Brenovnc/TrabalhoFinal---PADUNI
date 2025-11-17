@@ -461,6 +461,7 @@ async function getMatches(options = {}) {
         m.score,
         m.data_match as data_criacao,
         m.status,
+        m.justificativa_anulacao,
         u1.nome as user1_nome,
         u1.email as user1_email,
         u2.nome as user2_nome,
@@ -503,7 +504,8 @@ async function getMatches(options = {}) {
       },
       score: row.score ? parseFloat(row.score) : null,
       status: row.status,
-      dataCriacao: row.data_criacao
+      dataCriacao: row.data_criacao,
+      justificativa_anulacao: row.justificativa_anulacao || null
     }));
   } catch (error) {
     console.error('[MATCH] Erro ao buscar matches:', error);
