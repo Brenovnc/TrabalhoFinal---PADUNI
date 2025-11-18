@@ -150,9 +150,32 @@ function sendAccountDeletionCode(email, code) {
   return result.then(res => ({ ...res, code }));
 }
 
+/**
+ * @deprecated Esta função está depreciada. Use matchNotificationService.notifyMatchCreated() ao invés.
+ * Esta função foi mantida apenas para compatibilidade com código legado.
+ * A nova implementação não envia dados pessoais do parceiro.
+ * 
+ * Envia notificação de match para calouro ou veterano
+ * NOTA: Esta versão não envia dados pessoais do parceiro (conforme RFS07)
+ * 
+ * @param {string} email - Email do destinatário
+ * @param {string} userType - 'calouro' ou 'veterano'
+ * @returns {Promise<Object>} - Resultado do envio
+ */
+async function sendMatchNotification(email, userType) {
+  // Importa dinamicamente para evitar dependência circular
+  const { sendMatchNotificationToUser } = require('./matchNotificationService');
+  
+  console.warn('[EMAIL SERVICE] sendMatchNotification está depreciada. Use matchNotificationService.notifyMatchCreated()');
+  
+  // Usa o novo serviço de notificação (sem dados pessoais)
+  return sendMatchNotificationToUser(email, userType, 'unknown');
+}
+
 module.exports = {
   sendEmail,
   sendMFACode,
-  sendAccountDeletionCode
+  sendAccountDeletionCode,
+  sendMatchNotification
 };
 

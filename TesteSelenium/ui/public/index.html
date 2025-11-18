@@ -25,6 +25,24 @@
     }
     button:hover { background: #2a46a3; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button[disabled][data-disabled-reason] {
+      position: relative;
+    }
+    button[disabled][data-disabled-reason]:hover::after {
+      content: attr(data-disabled-reason);
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      transform: translate(-50%, -100%);
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid #3b82f6;
+      z-index: 5;
+    }
     .panel { 
       background: #121a2b; 
       border: 1px solid #243355; 
@@ -129,25 +147,24 @@
   <div class="panel test-section">
     <h2>Testes RFC01 - Manter Usuário</h2>
     <div class="grid">
-      <button data-test="RFS01">RFS01 - Cadastrar Usuário</button>
-      <button data-test="RFS02">RFS02 - Fazer Login</button>
-      <button data-test="RFS03">RFS03 - Visualizar Perfil</button>
-      <button data-test="RFS04">RFS04 - Editar Perfil</button>
-      <button data-test="RFS05">RFS05 - Alterar Email/Senha (MFA)</button>
-      <button data-test="RFS06">RFS06 - Excluir Conta (MFA)</button>
+      <button data-test="RFS01" data-suite="RFC01">RFS01 - Cadastrar Usuário</button>
+      <button data-test="RFS02" data-suite="RFC01">RFS02 - Fazer Login</button>
+      <button data-test="RFS03" data-suite="RFC01">RFS03 - Visualizar Perfil</button>
+      <button data-test="RFS04" data-suite="RFC01">RFS04 - Editar Perfil</button>
+      <button data-test="RFS05" data-suite="RFC01">RFS05 - Alterar Email/Senha (MFA)</button>
+      <button data-test="RFS06" data-suite="RFC01">RFS06 - Excluir Conta (MFA)</button>
     </div>
   </div>
 
-  <!-- Futuras seções de testes podem ser adicionadas aqui -->
-  <!-- Exemplo:
+  <!-- Seção de Testes RFC02 -->
   <div class="panel test-section">
-    <h2>Testes RFC02 - [Nome do Requisito]</h2>
+    <h2>Testes RFC02 - Realizar Match</h2>
     <div class="grid">
-      <button data-test="RFS07">RFS07 - [Teste 1]</button>
-      <button data-test="RFS08">RFS08 - [Teste 2]</button>
+      <button data-test="RFS07" data-suite="RFC02">RFS07 - Realizar Match Automático</button>
+      <button data-test="RFS08" data-suite="RFC02" disabled data-disabled-reason="Automático do sistema no RFS07" title="Automático do sistema no RFS07">RFS08 - Notificar Match</button>
+      <button data-test="RFS09" data-suite="RFC02">RFS09 - Desfazer Match</button>
     </div>
   </div>
-  -->
 
   <!-- Painel de Logs -->
   <div class="panel">
@@ -187,6 +204,7 @@
       };
       (data.users.calouros || []).forEach(u => makeOpt(u, 'Calouro'));
       (data.users.veteranos || []).forEach(u => makeOpt(u, 'Veterano'));
+      (data.users.administradores || []).forEach(u => makeOpt(u, 'Administrador'));
       if (!document.getElementById('delayInput').value) {
         document.getElementById('delayInput').placeholder = String(data.defaultStepDelayMs || 1000);
       }
@@ -204,13 +222,19 @@
       return undefined;
     }
 
+    function inferSuiteFromId(id) {
+      if (['RFS07', 'RFS08', 'RFS09'].includes(id)) return 'RFC02';
+      return 'RFC01';
+    }
+
     async function run(id) {
       appendLog(`Iniciando ${id}...`);
       setStatus(`Executando ${id}...`, '');
       const btn = document.querySelector(`button[data-test="${id}"]`);
       if (btn) btn.classList.remove('btn-ok','btn-fail','btn-skip');
+      const suite = btn?.dataset?.suite || inferSuiteFromId(id);
       const payload = {
-        suite: 'RFC01', // Sempre RFC01 por enquanto
+        suite,
         stepDelayMs: getStepDelay(),
         userIds: getSelectedUsers()
       };

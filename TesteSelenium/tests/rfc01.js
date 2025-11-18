@@ -138,9 +138,10 @@ function withDelayLogger(logger) {
 }
 
 function allUserDefs() {
+	const admins = config.users?.administradores || [];
 	const calouros = config.users?.calouros || [];
 	const veteranos = config.users?.veteranos || [];
-	return [...calouros, ...veteranos];
+	return [...calouros, ...veteranos, ...admins];
 }
 
 function getUserDefsByIds(ids = []) {

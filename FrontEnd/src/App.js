@@ -6,6 +6,7 @@ import ProfileView from './components/ProfileView';
 import ProfileEdit from './components/ProfileEdit';
 import ChangeCredentials from './components/ChangeCredentials';
 import DeleteAccount from './components/DeleteAccount';
+import MatchesTable from './components/MatchesTable';
 import { isAuthenticated } from './utils/auth';
 import './App.css';
 
@@ -44,6 +45,12 @@ function App() {
       // Check if user wants to delete account
       if (isAuthenticated() && (path === '/delete-account' || path === '/excluir-conta')) {
         setCurrentView('deleteAccount');
+        return;
+      }
+
+      // Check if user wants to view matches table
+      if (isAuthenticated() && (path === '/matches' || path === '/matches-table' || path === '/lista-matches')) {
+        setCurrentView('matchesTable');
         return;
       }
 
@@ -92,6 +99,9 @@ function App() {
     } else if (view === 'deleteAccount') {
       window.history.pushState({}, '', '/delete-account');
       setCurrentView('deleteAccount');
+    } else if (view === 'matchesTable') {
+      window.history.pushState({}, '', '/matches');
+      setCurrentView('matchesTable');
     } else {
       window.history.pushState({}, '', '/login');
       setCurrentView('login');
@@ -99,6 +109,14 @@ function App() {
   };
 
   // Render appropriate component based on current view
+  if (currentView === 'matchesTable') {
+    return (
+      <div className="App">
+        <MatchesTable />
+      </div>
+    );
+  }
+
   if (currentView === 'deleteAccount') {
     return (
       <div className="App">

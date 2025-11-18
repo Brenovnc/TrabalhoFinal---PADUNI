@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { runSingleTest } = require('../tests/rfc01');
+const { runSingleTest } = require('../tests');
 const { getOrCreateDriver } = require('../helpers/driver');
 const { requestCancel, resetCancel } = require('../state');
 const { config } = require('../config');
@@ -22,6 +22,7 @@ app.get('/api/users', (_req, res) => {
 		users: {
 			calouros: (config.users?.calouros || []).map(u => ({ id: u.id, label: u.label, role: u.role })),
 			veteranos: (config.users?.veteranos || []).map(u => ({ id: u.id, label: u.label, role: u.role })),
+			administradores: (config.users?.administradores || []).map(u => ({ id: u.id, label: u.label, role: u.role }))
 		},
 		defaultStepDelayMs: config.defaultStepDelayMs || 1000
 	});
