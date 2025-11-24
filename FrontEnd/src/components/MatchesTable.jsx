@@ -188,6 +188,8 @@ const MatchesTable = () => {
   const getStatusClass = (status) => {
     if (status === 'cancelado') {
       return 'status-cancelado';
+    } else if (status === 'anulacao_pendente') {
+      return 'status-anulacao-pendente';
     }
     return 'status-ativo';
   };
@@ -200,6 +202,8 @@ const MatchesTable = () => {
   const getStatusText = (status) => {
     if (status === 'cancelado') {
       return 'Cancelado';
+    }else if (status === 'anulacao_pendente') {
+      return 'Anulação Pendente';
     }
     return 'Ativo';
   };

@@ -91,7 +91,7 @@ async function requestMatchCancellation(data) {
 
     const match = matchResult.rows[0];
 
-    if (match.status !== 'ativo') {
+    if (match.status === 'cancelado') {
       await client.query('ROLLBACK');
       throw new Error(`Match não está ativo. Status atual: ${match.status}`);
     }
@@ -298,7 +298,7 @@ async function requestMatchCancellationByUser(data) {
     const match = matchResult.rows[0];
 
     // 2. Valida que o usuário solicitante faz parte do match
-    if (match.id_usuario_veterano !== usuario_solicitante && match.id_usuario_calouro !== usuario_solicitante) {
+    if (![parseInt(match.id_usuario_veterano), parseInt(match.id_usuario_calouro)].includes(parseInt(usuario_solicitante))) {
       await client.query('ROLLBACK');
       throw new Error('Usuário não faz parte deste match');
     }

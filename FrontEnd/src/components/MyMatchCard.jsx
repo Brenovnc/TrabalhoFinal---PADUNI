@@ -85,7 +85,11 @@ const MyMatchCard = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          match_id: matchData.match.id,
+          justificativa: 'Solicitação de cancelamento pelo usuário'
+        })
         // Sem body - o backend identifica pelo token do usuário
       });
 
