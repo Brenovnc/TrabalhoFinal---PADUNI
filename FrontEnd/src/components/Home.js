@@ -15,6 +15,16 @@ const Home = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [justificativa, setJustificativa] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Verifica se o usuário é administrador
+  useEffect(() => {
+    const user = getUser();
+    if (user && user.userType === 'administrador') {
+      setIsAdmin(true);
+    }
+  }, []);
+
 
   useEffect(() => {
     const userData = getUser();
@@ -385,99 +395,101 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Seção de Matches */}
-        <div className="matches-section">
-          <h2 className="matches-section-title">Matches</h2>
-          <div className="matches-actions">
-            <button 
-              onClick={handleGenerateMatches}
-              className="generate-matches-button"
-              disabled={matchesLoading}
-            >
-              {matchesLoading ? 'Processando...' : 'Gerar Matches'}
-            </button>
-            <button 
-              onClick={handleListMatches}
-              className="list-matches-button"
-              disabled={matchesLoading}
-            >
-              {matchesLoading ? 'Carregando...' : 'Listar Matches'}
-            </button>
-          </div>
+        {isAdmin && (
+        
+          <div className="matches-section">
+            <h2 className="matches-section-title">Matches</h2>
+            <div className="matches-actions">
+              <button 
+                onClick={handleGenerateMatches}
+                className="generate-matches-button"
+                disabled={matchesLoading}
+              >
+                {matchesLoading ? 'Processando...' : 'Gerar Matches'}
+              </button>
+              <button 
+                onClick={handleListMatches}
+                className="list-matches-button"
+                disabled={matchesLoading}
+              >
+                {matchesLoading ? 'Carregando...' : 'Listar Matches'}
+              </button>
+            </div>
 
-          {/* Tabela de Matches */}
-          {showMatchesTable && matchesList.length > 0 && (
-            <div className="matches-table-container">
-              <h3 className="matches-table-title">Lista de Matches</h3>
-              <div className="table-wrapper">
-                <table className="matches-table">
-                  <thead>
-                    <tr>
-                      <th>Veterano</th>
-                      <th>Calouro</th>
-                      <th>Score</th>
-                      <th>Status</th>
-                      <th>Data</th>
-                      <th>Justificativa</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matchesList.map((match) => (
-                      <tr key={match.id}>
-                        <td>{match.user1.nome || 'N/A'}</td>
-                        <td>{match.user2.nome || 'N/A'}</td>
-                        <td>{match.score !== null && match.score !== undefined 
-                          ? `${(match.score * 100).toFixed(1)}%` 
-                          : 'N/A'}</td>
-                        <td>{match.status || 'N/A'}</td>
-                        <td>
-                          {match.dataCriacao 
-                            ? new Date(match.dataCriacao).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                              })
-                            : 'N/A'}
-                        </td>
-                        <td>
-                          {match.justificativa_anulacao 
-                            ? <span className="justificativa-text">{match.justificativa_anulacao}</span>
-                            : <span className="justificativa-empty">-</span>}
-                        </td>
-                        <td>
-                          <button
-                            onClick={() => handleCancelClick(match)}
-                            className={`cancel-match-button ${match.status === 'cancelado' ? 'disabled' : ''}`}
-                            disabled={match.status === 'cancelado' || cancellingId === match.id}
-                          >
-                            {cancellingId === match.id ? 'Cancelando...' : 'Cancelar'}
-                          </button>
-                        </td>
+            {/* Tabela de Matches */}
+            {showMatchesTable && matchesList.length > 0 && (
+              <div className="matches-table-container">
+                <h3 className="matches-table-title">Lista de Matches</h3>
+                <div className="table-wrapper">
+                  <table className="matches-table">
+                    <thead>
+                      <tr>
+                        <th>Veterano</th>
+                        <th>Calouro</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Justificativa</th>
+                        <th>Ações</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {matchesList.map((match) => (
+                        <tr key={match.id}>
+                          <td>{match.user1.nome || 'N/A'}</td>
+                          <td>{match.user2.nome || 'N/A'}</td>
+                          <td>{match.score !== null && match.score !== undefined 
+                            ? `${(match.score * 100).toFixed(1)}%` 
+                            : 'N/A'}</td>
+                          <td>{match.status || 'N/A'}</td>
+                          <td>
+                            {match.dataCriacao 
+                              ? new Date(match.dataCriacao).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })
+                              : 'N/A'}
+                          </td>
+                          <td>
+                            {match.justificativa_anulacao 
+                              ? <span className="justificativa-text">{match.justificativa_anulacao}</span>
+                              : <span className="justificativa-empty">-</span>}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleCancelClick(match)}
+                              className={`cancel-match-button ${match.status === 'cancelado' ? 'disabled' : ''}`}
+                              disabled={match.status === 'cancelado' || cancellingId === match.id}
+                            >
+                              {cancellingId === match.id ? 'Cancelando...' : 'Cancelar'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {showMatchesTable && matchesList.length === 0 && (
-            <div className="no-matches-message">
-              Nenhum match encontrado.
-            </div>
-          )}
-        </div>
-
+            {showMatchesTable && matchesList.length === 0 && (
+              <div className="no-matches-message">
+                Nenhum match encontrado.
+              </div>
+            )}
+          </div>
+        )}
         <div className="home-actions">
           <button onClick={navigateToProfile} className="profile-button">
             Ver Meu Perfil
           </button>
+          
           <button 
             onClick={() => window.location.href = '/matches'} 
             className="matches-table-button"
           >
-            Gerenciar Matches
+            {isAdmin ? 'Gerenciar Matches' : 'Ver meu match' }
           </button>
           <button onClick={handleLogout} className="logout-button">
             Sair

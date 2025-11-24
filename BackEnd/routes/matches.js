@@ -5,7 +5,7 @@ const { getCalourosDisponiveis, getVeteranosDisponiveis, createMatchesBatch } = 
 const { processAutomaticMatch } = require('../utils/matchAI');
 const { addLogEntry } = require('../utils/criticalActionsLog');
 const { getMatches, countMatches, gerarMatches, getUserMatch, deleteMatch } = require('../utils/match');
-const { requestMatchCancellation } = require('../utils/matchCancellationService');
+const { requestMatchCancellation, requestMatchCancellationByUser } = require('../utils/matchCancellationService');
 // Nota: Notificações de match são enviadas automaticamente pelo createMatchesBatch
 
 /**
@@ -233,6 +233,48 @@ router.get('/list', async (req, res) => {
 });
 
 /**
+ * GET /api/matches/my-match
+ * Obtém o match do usuário logado (via token)
+ * Retorna todas as informações da matches_table com JOINs com usuarios_table e cursos_table
+ */
+router.get('/my-match', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de usuário não encontrado no token'
+      });
+    }
+
+    const matchInfo = await getUserMatch(userId);
+
+    if (!matchInfo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match não encontrado',
+        hasMatch: false
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Match encontrado',
+      hasMatch: true,
+      data: matchInfo
+    });
+  } catch (error) {
+    console.error('Error fetching user match:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar match do usuário',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+/**
  * GET /api/matches/user/:userId
  * Verifica se um usuário tem match e retorna as informações do match
  * Se não tiver match, retorna "match não encontrado"
@@ -296,6 +338,102 @@ router.get('/status', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro ao buscar status do match'
+    });
+  }
+});
+
+/**
+ * POST /api/matches/request-cancellation
+ * Solicita cancelamento de um match
+ * Recebe: match_id, justificativa e usuario_solicitante (via token)
+ * 
+ * Body:
+ * {
+ *   "match_id": 123,
+ *   "justificativa": "Texto da justificativa (obrigatório)"
+ * }
+ */
+router.post('/request-cancellation', authenticateToken, async (req, res) => {
+  try {
+    console.log('[MATCH CANCELLATION] ========================================');
+    
+    const { match_id, justificativa } = req.body;
+    const usuario_solicitante = req.user.id;
+
+    // Valida parâmetros
+    if (!match_id || isNaN(parseInt(match_id))) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do match inválido'
+      });
+    }
+
+    if (!justificativa || typeof justificativa !== 'string' || justificativa.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Justificativa é obrigatória'
+      });
+    }
+
+    if (!usuario_solicitante) {
+      return res.status(400).json({
+        success: false,
+        message: 'Usuário solicitante não encontrado no token'
+      });
+    }
+
+    // Solicita o cancelamento do match
+    const result = await requestMatchCancellationByUser({
+      match_id: parseInt(match_id),
+      justificativa: justificativa.trim(),
+      usuario_solicitante: parseInt(usuario_solicitante)
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Solicitação de anulação registrada com sucesso.',
+      data: {
+        matchId: result.matchId
+      }
+    });
+
+  } catch (error) {
+    console.error('Error requesting match cancellation:', error);
+    
+    // Retorna erro específico conforme o tipo
+    if (error.message === 'Match não encontrado') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message === 'Usuário não faz parte deste match') {
+      return res.status(403).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message === 'Justificativa é obrigatória') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message === 'Usuário solicitante não encontrado') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    // Erro genérico
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao solicitar anulação do match',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
