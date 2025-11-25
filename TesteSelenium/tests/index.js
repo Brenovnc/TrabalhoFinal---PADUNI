@@ -15,7 +15,8 @@ const TEST_TO_SUITE = {
 	RFS06: 'RFC01',
 	RFS07: 'RFC02',
 	RFS08: 'RFC02',
-	RFS09: 'RFC02'
+	RFS09: 'RFC02',
+	RFS10: 'RFC02'
 };
 
 function resolveSuite(id, preferredSuite) {

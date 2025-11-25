@@ -55,7 +55,7 @@ const config = {
 					fullName: 'Calouro Match 01',
 					yearOfBirth: '2006',
 					gender: 'Masculino',
-					course: 'Engenharia de Software',
+					course: 'Engenharia de Computação',
 					yearOfEntry: '2025',
 					interests: 'Mentorias iniciais; Integração acadêmica; Tecnologia aplicada'
 				}
@@ -76,7 +76,7 @@ const config = {
 					yearOfBirth: '2005',
 					gender: 'Feminino',
 					course: 'Engenharia de Computação',
-					yearOfEntry: '2024',
+					yearOfEntry: '2025',
 					interests: 'Robótica; Programação; Inteligência Artificial'
 				}
 			},
@@ -95,8 +95,8 @@ const config = {
 					fullName: 'Calouro Match 03',
 					yearOfBirth: '2005',
 					gender: 'Masculino',
-					course: 'Engenharia Elétrica',
-					yearOfEntry: '2024',
+					course: 'Engenharia de Computação',
+					yearOfEntry: '2025',
 					interests: 'Jogos Digitais; Comunidades Estudantis; Tecnologia'
 				}
 			},
@@ -116,8 +116,8 @@ const config = {
 					yearOfBirth: '2005',
 					gender: 'Masculino',
 					course: 'Engenharia de Computação',
-					yearOfEntry: '2024',
-					interests: 'Robótica; Programação; Inteligência Artificial'
+					yearOfEntry: '2025',
+					interests: 'Mentorias iniciais; Integração acadêmica; Tecnologia aplicada'
 				}
 			},
 			{
@@ -135,8 +135,8 @@ const config = {
 					fullName: 'Calouro Teste 02',
 					yearOfBirth: '2004',
 					gender: 'Feminino',
-					course: 'Engenharia Elétrica',
-					yearOfEntry: '2024',
+					course: 'Engenharia de Computação',
+					yearOfEntry: '2025',
 					interests: 'Voluntariado; Música; Integração Acadêmica'
 				}
 			},
@@ -155,34 +155,13 @@ const config = {
 					fullName: 'Calouro Teste 03',
 					yearOfBirth: '2005',
 					gender: 'Masculino',
-					course: 'Ciências da Computação',
-					yearOfEntry: '2024',
+					course: 'Engenharia de Computação',
+					yearOfEntry: '2025',
 					interests: 'Jogos Digitais; Comunidades Estudantis; Tecnologia'
 				}
 			}
 		],
 		veteranos: [
-			{
-				id: 'veteranoADM',
-				label: 'Veterano ADM 01',
-				role: 'veterano',
-				emailPrefix: 'veteranoADM01',
-				emailDomain: '@teste.com',
-				credentials: {
-					password: 'Senha@Forte123',
-					currentPassword: 'Senha@Forte123',
-					newPassword: 'NovaSenha@Forte123'
-				},
-				profile: {
-					fullName: 'Veterano ADM 01',
-					yearOfBirth: '2002',
-					gender: 'Masculino',
-					course: 'Engenharia de Software',
-					yearOfEntry: '2020',
-					interests: 'Engenharia de Software; Tecnologia; Inteligência Artificial'
-				},
-				email: 'veteranoADM01@teste.com'
-			},
 			{
 				id: 'veteranoMatch01',
 				label: 'Veterano Match 01',
@@ -198,9 +177,9 @@ const config = {
 					fullName: 'Veterano Match 01',
 					yearOfBirth: '1999',
 					gender: 'Masculino',
-					course: 'Engenharia de Software',
+					course: 'Engenharia de Computação',
 					yearOfEntry: '2021',
-					interests: 'Mentoria técnica; Projetos colaborativos; Comunidades de software'
+					interests: 'Mentorias iniciais; Integração acadêmica; Tecnologia aplicada'
 				},
 				email: 'veterano.match01@teste.com'
 			},
@@ -240,7 +219,7 @@ const config = {
 					fullName: 'Veterano Match 03',
 					yearOfBirth: '1998',
 					gender: 'Masculino',
-					course: 'Engenharia Elétrica',
+					course: 'Engenharia de Computação',
 					yearOfEntry: '2019',
 					interests: 'Jogos Digitais; Comunidades Estudantis; Tecnologia'
 				},
@@ -282,7 +261,7 @@ const config = {
 					fullName: 'Veterano Teste 02',
 					yearOfBirth: '1999',
 					gender: 'Feminino',
-					course: 'Engenharia Elétrica',
+					course: 'Engenharia de Computação',
 					yearOfEntry: '2019',
 					interests: 'Jogos Digitais; Comunidades Estudantis; Tecnologia'
 				},
@@ -303,7 +282,7 @@ const config = {
 					fullName: 'Veterano Teste 03',
 					yearOfBirth: '1998',
 					gender: 'Masculino',
-					course: 'Engenharia de Produção',
+					course: 'Engenharia de Computação',
 					yearOfEntry: '2018',
 					interests: 'Empreendedorismo; Liga Acadêmica; Esportes'
 				},

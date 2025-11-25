@@ -262,7 +262,7 @@ async function requestDebugCode(driver, buttonSelector, codeSelector, log, logMe
 async function testRfs01_register(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false; // Nunca fechar, sempre usar janela persistente
 	const result = { id: 'RFS01', ok: false, skipped: false, message: '' };
 
 	try {
@@ -325,7 +325,7 @@ async function testRfs01_register(logger = () => {}, externalDriver = null, opti
 async function testRfs02_login(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false;
 	const result = { id: 'RFS02', ok: false, skipped: false, message: '' };
 
 	try {
@@ -351,7 +351,7 @@ async function testRfs02_login(logger = () => {}, externalDriver = null, options
 async function testRfs03_viewProfile(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false;
 	const result = { id: 'RFS03', ok: false, skipped: false, message: '' };
 
 	try {
@@ -378,7 +378,7 @@ async function testRfs03_viewProfile(logger = () => {}, externalDriver = null, o
 async function testRfs04_editProfile(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false;
 	const result = { id: 'RFS04', ok: false, skipped: false, message: '' };
 
 	try {
@@ -420,7 +420,7 @@ async function testRfs04_editProfile(logger = () => {}, externalDriver = null, o
 async function testRfs05_changeEmailOrPassword(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false;
 	const result = { id: 'RFS05', ok: false, skipped: false, message: '' };
 
 	try {
@@ -470,7 +470,7 @@ async function testRfs05_changeEmailOrPassword(logger = () => {}, externalDriver
 async function testRfs06_deleteAccount(logger = () => {}, externalDriver = null, options = {}) {
 	const log = withDelayLogger(async (msg) => logger(msg));
 	const driver = externalDriver || await getOrCreateDriver();
-	const ownedDriver = !externalDriver;
+	const ownedDriver = false;
 	const result = { id: 'RFS06', ok: false, skipped: false, message: '' };
 
 	try {

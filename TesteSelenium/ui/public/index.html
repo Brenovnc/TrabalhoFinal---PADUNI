@@ -127,6 +127,16 @@
 <body>
   <h1>PADUNI - Test Runner</h1>
   
+  <!-- Botão para instanciar página de testes -->
+  <div class="panel">
+    <button id="btn-open-test-page" style="width: 100%; padding: 12px; font-size: 16px; font-weight: 600;">
+      Abrir Página de Testes
+    </button>
+    <small style="display: block; margin-top: 8px; color: #94a3b8;">
+      Clique para abrir a janela do navegador onde os testes serão executados
+    </small>
+  </div>
+  
   <!-- Painel de Configuração -->
   <div class="panel">
     <div class="config-panel">
@@ -162,7 +172,8 @@
     <div class="grid">
       <button data-test="RFS07" data-suite="RFC02">RFS07 - Realizar Match Automático</button>
       <button data-test="RFS08" data-suite="RFC02" disabled data-disabled-reason="Automático do sistema no RFS07" title="Automático do sistema no RFS07">RFS08 - Notificar Match</button>
-      <button data-test="RFS09" data-suite="RFC02">RFS09 - Desfazer Match</button>
+      <button data-test="RFS09" data-suite="RFC02">RFS09 - Desfazer Match (ADMIN)</button>
+      <button data-test="RFS10" data-suite="RFC02">RFS10 - Solicitar Anulação de Match</button>
     </div>
   </div>
 
@@ -223,7 +234,7 @@
     }
 
     function inferSuiteFromId(id) {
-      if (['RFS07', 'RFS08', 'RFS09'].includes(id)) return 'RFC02';
+      if (['RFS07', 'RFS08', 'RFS09', 'RFS10'].includes(id)) return 'RFC02';
       return 'RFC01';
     }
 
@@ -278,6 +289,21 @@
         appendLog('Cancelamento solicitado pelo usuário.');
       } catch (e) {
         appendLog('Falha ao solicitar cancelamento.');
+      }
+    });
+
+    // Botão para abrir página de testes
+    document.getElementById('btn-open-test-page').addEventListener('click', async () => {
+      try {
+        const resp = await fetch('/api/open-test-page', { method: 'POST' });
+        const data = await resp.json();
+        if (data.ok) {
+          appendLog('Página de testes aberta. Os testes serão executados nesta janela.');
+        } else {
+          appendLog('Erro ao abrir página de testes: ' + (data.message || 'Erro desconhecido'));
+        }
+      } catch (e) {
+        appendLog('Falha ao abrir página de testes: ' + e.message);
       }
     });
 

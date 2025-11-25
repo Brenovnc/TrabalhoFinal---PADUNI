@@ -59,6 +59,17 @@ app.post('/api/stop', (req, res) => {
 	res.json({ ok: true });
 });
 
+// Abrir página de testes (instanciar janela do navegador)
+app.post('/api/open-test-page', async (req, res) => {
+	try {
+		const driver = await getOrCreateDriver();
+		await driver.get(config.baseUrl);
+		res.json({ ok: true });
+	} catch (err) {
+		res.json({ ok: false, message: err.message || String(err) });
+	}
+});
+
 io.on('connection', (socket) => {
 	socket.on('join', (room) => {
 		socket.join(room);
