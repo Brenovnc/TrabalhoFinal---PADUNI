@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getToken } from '../utils/auth';
+import { getToken, getUser } from '../utils/auth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MyMatchCard from './MyMatchCard';
 import './MatchesTable.css';
 
 const MatchesTable = () => {
@@ -11,6 +12,15 @@ const MatchesTable = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [justificativa, setJustificativa] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Verifica se o usuário é administrador
+  useEffect(() => {
+    const user = getUser();
+    if (user && user.userType === 'administrador') {
+      setIsAdmin(true);
+    }
+  }, []);
 
   /**
    * Busca a lista de matches do servidor
@@ -178,6 +188,8 @@ const MatchesTable = () => {
   const getStatusClass = (status) => {
     if (status === 'cancelado') {
       return 'status-cancelado';
+    } else if (status === 'anulacao_pendente') {
+      return 'status-anulacao-pendente';
     }
     return 'status-ativo';
   };
@@ -190,6 +202,8 @@ const MatchesTable = () => {
   const getStatusText = (status) => {
     if (status === 'cancelado') {
       return 'Cancelado';
+    }else if (status === 'anulacao_pendente') {
+      return 'Anulação Pendente';
     }
     return 'Ativo';
   };
@@ -199,7 +213,12 @@ const MatchesTable = () => {
     getMatches();
   }, []);
 
-  // Tela de loading
+  // Se não for administrador, mostra apenas o card do match do usuário
+  if (!isAdmin) {
+    return <MyMatchCard />;
+  }
+
+  // Tela de loading (apenas para administradores)
   if (loading) {
     return (
       <div className="matches-table-container">

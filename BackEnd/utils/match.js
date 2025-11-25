@@ -568,6 +568,7 @@ async function getUserMatch(userId) {
     const userIdNum = parseInt(userId);
 
     // Busca match onde o usuário está em qualquer posição (veterano ou calouro)
+    // Retorna todos os campos da matches_table e remove filtro de status para retornar qualquer match
     const result = await query(`
       SELECT 
         m.id as match_id,
@@ -576,6 +577,10 @@ async function getUserMatch(userId) {
         m.score,
         m.status,
         m.data_match,
+        m.solicitacao_anulacao,
+        m.justificativa_anulacao,
+        m.criado_em,
+        m.atualizado_em,
         -- Informações do usuário veterano
         u_veterano.id as veterano_id,
         u_veterano.nome as veterano_nome,
@@ -602,7 +607,6 @@ async function getUserMatch(userId) {
       LEFT JOIN cursos_table c_veterano ON u_veterano.curso_id = c_veterano.id
       LEFT JOIN cursos_table c_calouro ON u_calouro.curso_id = c_calouro.id
       WHERE (m.id_usuario_veterano = $1 OR m.id_usuario_calouro = $1)
-        AND m.status = 'ativo'
       ORDER BY m.data_match DESC
       LIMIT 1
     `, [userIdNum]);
@@ -664,9 +668,15 @@ async function getUserMatch(userId) {
     return {
       match: {
         id: parseInt(row.match_id),
+        idUsuarioVeterano: row.id_usuario_veterano ? parseInt(row.id_usuario_veterano) : null,
+        idUsuarioCalouro: row.id_usuario_calouro ? parseInt(row.id_usuario_calouro) : null,
         score: row.score ? parseFloat(row.score) : null,
         status: row.status,
-        dataMatch: row.data_match
+        dataMatch: row.data_match,
+        solicitacaoAnulacao: row.solicitacao_anulacao || false,
+        justificativaAnulacao: row.justificativa_anulacao || null,
+        criadoEm: row.criado_em,
+        atualizadoEm: row.atualizado_em
       },
       solicitante,
       matchado
