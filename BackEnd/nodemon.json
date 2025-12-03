@@ -1,0 +1,23 @@
+{
+  "watch": [
+    "routes",
+    "utils",
+    "middleware",
+    "server.js"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "node_modules",
+    "data/*.json",
+    "*.log",
+    ".env"
+  ],
+  "exec": "node server.js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 1000,
+  "verbose": true,
+  "restartable": "rs"
+}
+

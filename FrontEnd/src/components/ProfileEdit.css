@@ -1,0 +1,298 @@
+.profile-edit-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #19528d 0%, #1a5f9f 100%);
+  padding: 20px;
+}
+
+.profile-edit-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 700px;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.profile-edit-title {
+  color: #19528d;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.profile-edit-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #19528d, #f7cc46);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
+
+.profile-edit-subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.form-section {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.section-title {
+  color: #19528d;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.required {
+  color: #e74c3c;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #19528d;
+  box-shadow: 0 0 0 3px rgba(25, 82, 141, 0.1);
+}
+
+.field-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.interests-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.interests-textarea:focus {
+  outline: none;
+  border-color: #19528d;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+
+.password-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.cancel-button {
+  background: white;
+  color: #19528d;
+  border: 2px solid #19528d;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+.cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #19528d 0%, #1a5f9f 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  box-shadow: 0 4px 15px rgba(25, 82, 141, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(247, 204, 70, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.submit-button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(25, 82, 141, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-messages {
+  background: #fee;
+  border-left: 4px solid #e74c3c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+.success-message {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+  color: #155724;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #19528d;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .profile-edit-card {
+    padding: 24px;
+    margin: 10px;
+  }
+
+  .profile-edit-title {
+    font-size: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .interests-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .profile-edit-container {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-edit-card {
+    padding: 20px;
+  }
+
+  .interests-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
